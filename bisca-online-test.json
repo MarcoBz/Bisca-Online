@@ -1,0 +1,109 @@
+{
+  "matches":{
+
+    "match_0":{
+      "creation_date" : "2020-03-23",
+      "start_date" : "2020-03-23",
+      "end_date" : "2020-03-23",
+      "n_players" : 6,
+      "joined_players": 4,
+      "ready_players": 0,
+      "n_lives" : 5,
+      "reborn_action": false,
+      "winner" : null
+    },
+
+    "match_1":{
+      "creation_date" : "2020-03-21",
+      "start_date" : "2020-03-22",
+      "end_date" : "2020-03-23",
+      "n_players" : 6,
+      "joined_players": 4,
+      "ready_players": 0,
+      "n_lives" : 6,
+      "reborn_action": false,
+      "winner" : null
+    }
+  },
+
+  "players":{
+
+    "match_0":{
+      "player_0":{
+        "is_ready": false,
+        "player_name":"A",
+        "n_lives": 5,
+        "is_dead": false,
+        "is_reborn": false
+      },
+      "player_1":{
+        "is_ready": false,
+        "player_name":"B",
+        "n_lives": 5,
+        "is_dead": false,
+        "is_reborn": false
+      }
+    },
+
+    "match_1":{
+      "player_0":{
+        "is_ready": false,
+        "player_name":"A",
+        "n_lives": 6,
+        "is_dead": false,
+        "is_reborn": false,
+        "current_game": "0"
+      }
+    }
+  },
+
+  "games": {
+
+      "match_0":{
+          "game_0":{
+            "is_start": false,
+            "is_ended": false,
+            "n_cards": 5,
+            "dealer_index": "1",
+            "current_turn": "0",
+            "hands":{
+                "player_0":{
+                    "first_card": 1,
+                    "second_card": 2
+                },
+                "player_1":{
+                    "first_card": 5,
+                    "second_card": 2
+                }
+            },
+            "total_calls": 0,
+            "calls":{
+                "player_0": 0,
+                "player_1": 0
+            },
+            "totals":{
+                "player_0": 0,
+                "player_1": 0
+            }
+          }
+      }
+  },
+
+  "turns":{
+    "match_0":{
+        "game_0":{
+            "turn_0":{
+                "first_player_index": "0",       
+                "is_start": false,
+                "is_ended": false,
+                "player_card":{
+                    "player_0": 1,
+                    "player_1": 2
+                },
+                "winner_index": "0"                
+            }
+        }  
+    }   
+  }
+
+}
