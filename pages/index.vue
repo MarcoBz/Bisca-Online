@@ -1,13 +1,16 @@
 <template>
-  <div class="container">
+  <div class="container-fluid">
     <div>
-      <logo />
-      <h1 class="title">
-        bisca_online
-      </h1>
-      <h2 class="subtitle">
-        
-      </h2>
+      <div class= "row text-center">
+        <div class = "col-12">
+          <table-head />
+        </div>
+      </div>
+      <div class= "row text-center" v-for = "match in matches">
+        <div class = "col-12">
+          <match-row v-bind:match = match />
+        </div>
+      </div>
       <div class="row text-center">
         <div class="col">
           <create-match />
@@ -20,10 +23,24 @@
 <script>
 import Logo from '~/components/Logo.vue'
 import CreateMatch from '~/components/CreateMatch.vue'
+import MatchRow from '~/components/MatchRow.vue'
+import TableHead from '~/components/TableHead.vue'
 export default {
   components: {
     Logo,
-    CreateMatch
+    CreateMatch,
+    TableHead,
+    MatchRow
+  },
+  data () {
+    return {
+      matches: null
+    }
+  },
+  created(){
+      this.$fireDb.ref(`matches`).on('value', (snapshot) => {
+        this.matches = Object.entries(snapshot.val());
+      })
   },
 
   methods: {
@@ -63,5 +80,23 @@ export default {
 
 .links {
   padding-top: 15px;
+}
+
+.backgroundClass{
+  background-color: lightgrey
+}
+
+.nopadding {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+.border-2 {
+    border-width:2px !important;
+}
+.row-eq-height {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display:         flex;
 }
 </style>

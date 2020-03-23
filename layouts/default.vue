@@ -1,6 +1,13 @@
 <template>
-  <div>
-    <nuxt />
+  <div class="container-fluid">
+
+    <div class= "row">
+      <div class="col-md-3"></div>
+      <div class="col-md-6 col-12 text-muted text-center">
+        <nuxt class="main" />
+      </div>
+      <div class="col-md-3"></div>
+    </div>
   </div>
 </template>
 
