@@ -8,21 +8,10 @@
       <h2 class="subtitle">
         
       </h2>
-      <div class="links">
-        <a
-          href="https://nuxtjs.org/"
-          target="_blank"
-          class="button--green"
-        >
-          Documentation
-        </a>
-        <a
-          href="https://github.com/nuxt/nuxt.js"
-          target="_blank"
-          class="button--grey"
-        >
-          GitHub
-        </a>
+      <div class="row text-center">
+        <div class="col">
+          <create-match />
+        </div>
       </div>
     </div>
   </div>
@@ -30,11 +19,17 @@
 
 <script>
 import Logo from '~/components/Logo.vue'
-
+import CreateMatch from '~/components/CreateMatch.vue'
 export default {
   components: {
-    Logo
+    Logo,
+    CreateMatch
+  },
+
+  methods: {
+
   }
+
 }
 </script>
 
