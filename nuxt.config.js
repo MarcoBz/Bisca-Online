@@ -60,7 +60,8 @@ export default {
           measurementId: '<measurementId>'
         },
         services: {
-          realtimeDb: true
+          realtimeDb: true,
+          functions: true,
         }
       }
     ]

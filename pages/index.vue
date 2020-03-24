@@ -1,19 +1,22 @@
 <template>
+
   <div class="container-fluid">
     <div>
+
+      <div class="row text-center m-3">
+        <div class="col">
+          <create-match />
+        </div>
+      </div>
+
       <div class= "row text-center">
         <div class = "col-12">
-          <table-head />
+          <match-table-head />
         </div>
       </div>
       <div class= "row text-center" v-for = "match in matches">
         <div class = "col-12">
           <match-row v-bind:match = match />
-        </div>
-      </div>
-      <div class="row text-center">
-        <div class="col">
-          <create-match />
         </div>
       </div>
     </div>
@@ -24,12 +27,12 @@
 import Logo from '~/components/Logo.vue'
 import CreateMatch from '~/components/CreateMatch.vue'
 import MatchRow from '~/components/MatchRow.vue'
-import TableHead from '~/components/TableHead.vue'
+import MatchTableHead from '~/components/MatchTableHead.vue'
 export default {
   components: {
     Logo,
     CreateMatch,
-    TableHead,
+    MatchTableHead,
     MatchRow
   },
   data () {
@@ -37,9 +40,10 @@ export default {
       matches: null
     }
   },
-  created(){
+  async created(){
+
       this.$fireDb.ref(`matches`).on('value', (snapshot) => {
-        this.matches = Object.entries(snapshot.val());
+        if(snapshot.val() ) this.matches = Object.entries(snapshot.val());
       })
   },
 
@@ -51,14 +55,7 @@ export default {
 </script>
 
 <style>
-.container {
-  margin: 0 auto;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
+
 
 .title {
   font-family: 'Quicksand', 'Source Sans Pro', -apple-system, BlinkMacSystemFont,

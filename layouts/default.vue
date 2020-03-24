@@ -1,17 +1,50 @@
 <template>
   <div class="container-fluid">
-
-    <div class= "row">
-      <div class="col-md-3"></div>
-      <div class="col-md-6 col-12 text-muted text-center">
-        <nuxt class="main" />
-      </div>
-      <div class="col-md-3"></div>
-    </div>
+        <div class="row justify-content-center">
+          <div class= "col-12">
+            <nav-bar/>
+          </div>
+        </div>
+          <div class= "row">
+            <div class="col-md-3"></div>
+            <div class="col-md-6 col-12 text-muted text-center">
+              <nuxt class="main" />
+            </div>
+            <div class="col-md-3"></div>
+          </div>
+        <div class="row justify-content-center">
+          <div class= "col-12">
+            <footer-component/>
+          </div>
+        </div>        
   </div>
 </template>
+<script>
+  import NavBar from "~/components/NavBar.vue";
+  import FooterComponent from "~/components/FooterComponent.vue";
 
+  export default {
+    components: {
+      NavBar,
+      FooterComponent
+    }
+  };
+</script>
 <style>
+
+.main{
+  margin-top: 100px;
+  margin-bottom: 120px;
+}
+
+.flex-fill {
+    flex:1;
+}
+
+body{
+  height: 100%
+}
+
 html {
   font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI',
     Roboto, 'Helvetica Neue', Arial, sans-serif;

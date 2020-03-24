@@ -1,29 +1,31 @@
 <template>
   <div class="container-fluid" >
-    <div class= "row text-center nopadding row-eq-height font-weight-bold backgroundClass" >
-        <div class="nopadding col-4 border" >
-            Match
-        </div>
-        <div class="nopadding col-2 border" >
-            Players
-        </div>
-        <div class="nopadding col-1 border" >
-            Lives
-        </div>
-        <div class="nopadding col-2 border" >
-            Status
-        </div>
-        <div class="nopadding col-3 border" >
-            
-        </div>
+    <div class= "row text-center nopadding row-eq-height font-weight-bold" >
+      <div class="nopadding col-2 border">
+          Ready
+      </div>
+      <div class="nopadding col-2 border" >
+          Name 
+      </div>
+      <div class="nopadding col-3 border" >
+          Hand
+      </div>
+      <div class="nopadding col-3 border" >
+          Your Call
+      </div>
+      <div class="nopadding col-1 border" >
+          Calls
+      </div>
+      <div class="nopadding col-1 border" >
+          Lives
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-
 export default {
-  name: "TableHead",
+  name: "PlayerTableHead",
     data () {
     return {
    

@@ -1,8 +1,7 @@
 <template>
       <div class="row text-center">
         <div class="col">
-          <button class="btn btn-light" @click= "createMatch" >Create Match</button>
-          total matches : {{totalMatches}}
+          <button class="btn btn-secondary" @click= "createMatch" >Create Match</button>
         </div>
       </div>
 </template>
@@ -20,7 +19,7 @@ export default {
     }
   },
 
-  created(){
+  async created(){
       this.$fireDb.ref('total_matches').on('value', (snapshot) => {
         this.totalMatches = snapshot.val();
       })
@@ -32,17 +31,11 @@ export default {
         let newMatchID = this.totalMatches + 1
         try {
           const totalMatchesUpdate = this.$fireDb.ref()
-          const result = await totalMatchesUpdate.update({
+          await totalMatchesUpdate.update({
             'total_matches': newMatchID
           })
-        } catch (e) {
-          console.log(e)
-          return
-        }
-        
-        const matchesRef = this.$fireDb.ref('matches')
-        try {
 
+          const matchesRef = this.$fireDb.ref('matches')
           let obj = {}
           obj["match_" + newMatchID] = {
               creation_date : (new Date()).toISOString(),
@@ -50,10 +43,39 @@ export default {
               joined_players: 0,
               ready_players: 0,
               n_lives : this.nLives,
-              reborn_action: false,            
+              reborn_action: false,  
+              current_game: "0",
+              current_turn: "0",
+              current_player_index: "0",
+              current_total_calls: 0          
           }
 
           await matchesRef.update(obj)
+
+          const gamesRef = this.$fireDb.ref(`games`)
+          let gameObj = {}
+          gameObj["match_" + newMatchID] = {}
+          gameObj["match_" + newMatchID]["game_0"] = {
+              is_started: false,
+              is_ended: false,
+              n_cards: 5,
+              dealer_index: "0",
+              current_turn: "0",
+              total_calls: 0          
+          }
+          await gamesRef.update(gameObj)          
+
+          const turnsRef = this.$fireDb.ref(`turns`)
+          let turnObj = {}
+          turnObj["match_" + newMatchID] = {}
+          turnObj["match_" + newMatchID]["game_0"] = {}
+          turnObj["match_" + newMatchID]["game_0"]["turn_0"] = {
+              is_started: false,
+              is_ended: false,
+              first_player_index: "0"
+          }
+          await turnsRef.update(turnObj)    
+
         } catch (e) {
           console.log(e)
           return
