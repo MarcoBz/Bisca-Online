@@ -1,22 +1,25 @@
 <template>
-  <div class="container-fluid">
+  <div class="container-fluid" v-if="match && game && turn">
 
     <div class= "row text-center">
     <div class = "col-12">
         <details-table-head />
     </div>
     </div>
-    <div class= "row text-center" v-if="match">
+    <div class= "row text-center">
     <div class = "col-12">
         <details-row v-bind:match = match v-bind:matchName = "$route.params.match" />
     </div>
     </div>
 
     <div class= "row text-center">
-      <div class="col-12">
-          <span><button class="btn btn-secondary m-3" @click= "addPlayer" v-bind:disabled = "match.joined_players == match.n_players"> Join </button></span>
-          <span><button class="btn btn-secondary m-3" @click= "addPlayer" v-bind:disabled = "match.ready_players != match.n_players"> Start </button></span>
-      </div>
+        <div class="col-12">
+            <span><button class="btn btn-secondary m-3" @click= "addPlayer" v-bind:disabled = "match.joined_players == match.n_players"> Join </button></span>
+            <span><button   class="btn btn-secondary m-3"
+                            @click= "startMatch" 
+                            v-bind:disabled = "match.is_started || match.ready_players != match.n_players">Start Match</button></span>
+            <span><button class="btn btn-secondary m-3" @click= "startGame" v-bind:disabled = "!match.lives_updated"> Start Game </button></span>
+        </div>
     </div>  
 
     <div class= "row text-center">
@@ -26,7 +29,16 @@
     </div>
     <div class= "row text-center" v-for = "player in players">
     <div class = "col-12">
-        <player-row v-bind:player = player v-bind:matchName = "$route.params.match" v-on:ready="updateReady" v-if="match" />
+        <player-row v-bind:player = player 
+                    v-bind:totalCalls = game.total_calls 
+                    v-bind:nCards = game.n_cards 
+                    v-bind:matchName = "$route.params.match" 
+                    v-bind:nCalls = match.current_numbers_calls
+                    v-bind:nPlayers = match.n_players
+                    v-bind:turnIsStarted = turn.is_started
+                    v-on:ready="updateReady" 
+                    v-on:setCall="setCall"
+                    v-on:playedCard="playedCard"/>
     </div>
     </div>
 
@@ -70,13 +82,142 @@ export default {
                 this.game = snapshot.val();
                 this.$fireDb.ref(`turns/${this.$route.params.match}/game_${this.match.current_game}/turn_${this.match.current_turn}`).on('value', (snapshot) => {
                     this.turn = snapshot.val();
-                    // console.log(this.match, this.game, this.turn)
                 })
             })
         })
     },
 
   methods:{
+
+    nextPlayerIndex(currentPlayerIndex, nPlayers){
+
+        let nextPlayerIndex = null
+        let tempIndex = currentPlayerIndex
+
+        while (!nextPlayerIndex){
+
+            tempIndex = tempIndex + 1 == nPlayers ? 0 : tempIndex + 1
+            if (!this.players.find(c => c[0] === `player_${tempIndex}`)[1].is_dead){
+                nextPlayerIndex = tempIndex
+            }
+        }
+        return nextPlayerIndex
+    }
+
+    async playedCard(payload){
+        try {
+            let currentPlayerIndex = parseInt(payload.player.split('_')[1])
+            // let nextPlayerIndex = currentPlayerIndex + 1 == this.match.n_players ? 0 : currentPlayerIndex + 1
+            let nextPlayerIndex = this.nextPlayerIndex(currentPlayerIndex, this.match.n_players)
+
+            const gameRef = this.$fireDb.ref(`games/${this.$route.params.match}/game_${this.match.current_game}`)
+            await gameRef.child(`hands/player_${currentPlayerIndex}/card_${payload.cardIndex}`).update({is_played : true})
+
+            const turnRef= this.$fireDb.ref(`turns/${this.$route.params.match}/game_${this.match.current_game}/turn_${this.match.current_turn}`)
+            let obj = {}
+            obj[payload.player] = payload.card
+            await turnRef.child('cards').update(obj)            
+
+            const matchRef = this.$fireDb.ref(`matches/${this.$route.params.match}`)
+            await matchRef.update({
+                current_player_index: nextPlayerIndex
+            })
+
+
+
+
+
+            if (nextPlayerIndex == this.turn.first_player_index){
+                await turnRef.update({
+                    is_ended: true
+                })
+            }
+            else{
+                const nextPlayerRef = this.$fireDb.ref(`players/${this.$route.params.match}/player_${nextPlayerIndex}`)
+                await nextPlayerRef.update({
+                    his_turn: true
+                }) 
+            }
+
+        } catch (e) {
+          console.log(e)
+          return
+        }  
+    },
+
+    async setCall(payload){
+        try {
+
+            let currentPlayerIndex = parseInt(payload.player.split('_')[1])
+            // let nextPlayerIndex = currentPlayerIndex + 1 == this.match.n_players ? 0 : currentPlayerIndex + 1
+            let nextPlayerIndex = this.nextPlayerIndex(currentPlayerIndex, this.match.n_players)
+
+            const matchRef = this.$fireDb.ref(`matches/${this.$route.params.match}`)
+            await matchRef.update({
+                current_total_calls: this.match.current_total_calls + payload.call,
+                current_numbers_calls: this.match.current_numbers_calls + 1,
+                current_player_index: nextPlayerIndex
+            })
+
+            const gameRef = this.$fireDb.ref(`games/${this.$route.params.match}/game_${this.match.current_game}`)
+            await gameRef.update({
+                total_calls: this.game.total_calls + payload.call
+            })
+            let obj = {}
+            obj[payload.player] = payload.call
+            await gameRef.child('calls').update(obj)
+
+            const nextPlayerRef = this.$fireDb.ref(`players/${this.$route.params.match}/player_${nextPlayerIndex}`)
+            await nextPlayerRef.update({
+                his_turn: true
+            }) 
+
+            if (nextPlayerIndex == this.game.dealer_index){
+
+                const turnRef= this.$fireDb.ref(`turns/${this.$route.params.match}/game_${this.match.current_game}/turn_${this.match.current_turn}`)
+                await turnRef.update({
+                    is_started: true,
+                    first_player_index: this.game.dealer_index,
+                })
+
+            }
+
+        } catch (e) {
+          console.log(e)
+          return
+        }  
+    },
+
+    async startGame(){
+        try {
+
+            const gameRef = this.$fireDb.ref(`games/${this.$route.params.match}/game_${this.match.current_game}`)
+            await gameRef.update({
+                'is_started': true
+            })
+            const matchRef = this.$fireDb.ref(`matches/${this.$route.params.match}`)
+            await matchRef.update({
+                'lives_updated': false
+            })
+        } catch (e) {
+          console.log(e)
+          return
+        }
+    },
+
+    async startMatch(){
+        try {
+
+            const matchRef = this.$fireDb.ref(`matches/${this.$route.params.match}`)
+            await matchRef.update({
+                'is_started': true,
+                'lives_updated': true
+            })
+        } catch (e) {
+          console.log(e)
+          return
+        }  
+    },
 
     async updateReady(){
         try {
@@ -105,9 +246,12 @@ export default {
                 player_name: this.names[this.match.joined_players - 1 ],
                 n_lives: this.match.n_lives,
                 is_dead: false,
-                is_reborn: false            
+                is_reborn: false,
+                is_winner: false,
+                current_call: 0,
+                called_current_game: false,
+                his_turn: false            
             }
-            console.log(playerObj)
             await playersRef.update(playerObj)
 
             const gamesRef = this.$fireDb.ref(`games/${this.$route.params.match}/game_0`)

@@ -20,7 +20,7 @@
 
     "match_0":{
       "player_0":{
-        "is_ready": false,
+        "is_ready": true,
         "player_name":"A",
         "n_lives": 5,
         "is_dead": false,
@@ -79,7 +79,7 @@
                     "player_0": 1,
                     "player_1": 2
                 },
-                "winner_index": "0"                
+                "winner_index": null               
             }
         }  
     }   

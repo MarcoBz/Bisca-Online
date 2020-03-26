@@ -13,8 +13,8 @@ export default {
 
     data () {
     return {
-      nLives: 5,
-      nPlayers: 6,
+      nLives: 3,
+      nPlayers: 3,
       totalMatches: null
     }
   },
@@ -39,15 +39,21 @@ export default {
           let obj = {}
           obj["match_" + newMatchID] = {
               creation_date : (new Date()).toISOString(),
+              is_started: false,
+              is_ended: false,
               n_players : this.nPlayers,
               joined_players: 0,
               ready_players: 0,
               n_lives : this.nLives,
               reborn_action: false,  
-              current_game: "0",
-              current_turn: "0",
-              current_player_index: "0",
-              current_total_calls: 0          
+              current_game: 0,
+              current_turn: 0,
+              current_player_index: 0,
+              current_total_calls: 0,
+              current_numbers_calls: 0,
+              lives_updated: false,
+              winner_player_index: null,
+              is_noWinner: false        
           }
 
           await matchesRef.update(obj)
@@ -58,9 +64,9 @@ export default {
           gameObj["match_" + newMatchID]["game_0"] = {
               is_started: false,
               is_ended: false,
-              n_cards: 5,
-              dealer_index: "0",
-              current_turn: "0",
+              n_cards: 3,
+              dealer_index: 0,
+              current_turn: 0,
               total_calls: 0          
           }
           await gamesRef.update(gameObj)          
@@ -72,7 +78,7 @@ export default {
           turnObj["match_" + newMatchID]["game_0"]["turn_0"] = {
               is_started: false,
               is_ended: false,
-              first_player_index: "0"
+              first_player_index: 0
           }
           await turnsRef.update(turnObj)    
 
