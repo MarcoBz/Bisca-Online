@@ -14,7 +14,6 @@
 
     <div class= "row text-center">
         <div class="col-12">
-            <span><button class="btn btn-secondary m-3" @click= "addPlayer" v-bind:disabled = "match.joined_players == match.n_players"> Join </button></span>
             <span><button   class="btn btn-secondary m-3"
                             @click= "startMatch" 
                             v-bind:disabled = "match.is_started || match.ready_players != match.n_players">Start Match</button></span>
@@ -27,15 +26,13 @@
         <player-table-head />
     </div>
     </div>
-    <div class= "row text-center" v-for = "player in players">
+    <div class= "row text-center" >
     <div class = "col-12">
-        <player-row v-bind:player = player 
-                    v-bind:totalCalls = game.total_calls 
-                    v-bind:nCards = game.n_cards 
+        <player-row v-bind:player = currentPlayer 
+                    v-bind:match = match
+                    v-bind:game = game
+                    v-bind:turn = turn
                     v-bind:matchName = "$route.params.match" 
-                    v-bind:nCalls = match.current_numbers_calls
-                    v-bind:nPlayers = match.n_players
-                    v-bind:turnIsStarted = turn.is_started
                     v-on:ready="updateReady" 
                     v-on:setCall="setCall"
                     v-on:playedCard="playedCard"/>
@@ -46,7 +43,7 @@
 </template>
 
 <script>
-import PlayerRow from "~/components/Test/PlayerRow.vue"
+import PlayerRow from "~/components/Test2/PlayerRow.vue"
 import PlayerTableHead from "~/components/Test/PlayerTableHead.vue"
 import DetailsRow from "~/components/Test/DetailsRow.vue"
 import DetailsTableHead from "~/components/Test/DetailsTableHead.vue"
@@ -62,6 +59,7 @@ export default {
     data () {
         return {
             match: null,
+            currentPlayer : null,
             players: null,
             game: null,
             turn: null,
@@ -72,7 +70,10 @@ export default {
     async created(){
 
         this.$fireDb.ref(`players/${this.$route.params.match}`).on('value', (snapshot) => {
-            if(snapshot.val()) this.players = Object.entries(snapshot.val());
+            if(snapshot.val()) {
+                this.players = Object.entries(snapshot.val());
+                this.currentPlayer  = this.players.find(c => c[0] === this.$route.params.player)
+            }
             
         })
 
@@ -90,10 +91,12 @@ export default {
   methods:{
 
     nextPlayerIndex(currentPlayerIndex, nPlayers){
+
         let nextPlayerIndex = null
         let tempIndex = currentPlayerIndex
 
         while (nextPlayerIndex === null){
+            console.log(nextPlayerIndex)
             tempIndex = tempIndex + 1 == nPlayers ? 0 : tempIndex + 1
             if (!this.players.find(c => c[0] === `player_${tempIndex}`)[1].is_dead){
                 nextPlayerIndex = tempIndex
@@ -121,6 +124,10 @@ export default {
                 current_player_index: nextPlayerIndex
             })
 
+
+
+
+
             if (nextPlayerIndex == this.turn.first_player_index){
                 await turnRef.update({
                     is_ended: true
@@ -140,6 +147,7 @@ export default {
     },
 
     async setCall(payload){
+        console.log('test1')
         try {
 
             let currentPlayerIndex = parseInt(payload.player.split('_')[1])

@@ -17,15 +17,15 @@ function shuffle(array) {
     return array;
 }
 
-function nextPlayerIndex(currentPlayerIndex, nPlayers){
+function nextDealerIndex(currentPlayerIndex, nPlayers, players){
 
     let nextPlayerIndex = null
     let tempIndex = currentPlayerIndex
 
-    while (!nextPlayerIndex){
+    while (nextPlayerIndex === null){
         
         tempIndex = tempIndex + 1 == nPlayers ? 0 : tempIndex + 1
-        if (!this.players.find(c => c[0] === `player_${tempIndex}`)[1].is_dead){
+        if (!players.find(c => c[0] === `player_${tempIndex}`)[1].is_dead){
             nextPlayerIndex = tempIndex
         }
     }
@@ -33,4 +33,4 @@ function nextPlayerIndex(currentPlayerIndex, nPlayers){
 }
 
 module.exports.shuffle = shuffle
-module.exports.nextPlayerIndex = nextPlayerIndex
+module.exports.nextDealerIndex = nextDealerIndex

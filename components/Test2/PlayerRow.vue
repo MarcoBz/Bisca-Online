@@ -7,24 +7,24 @@
       <div class="nopadding col-2 border" v-else>
           <button class="btn btn-warning" v-bind:disabled = "player[1].is_ready" @click = "playerIsReady"> Ready </button>
       </div>
-      <div class="nopadding col-2 border" v-bind:class = "{'text-success': player[1].his_turn}" >
+      <div class="nopadding col-2 border" v-bind:class = "{'bg-success': player[1].his_turn}" >
           {{player[1].player_name}}
       </div>
       <div class="nopadding col-3 border" >
-          <span v-if="player[1].current_hand"><button class = "btn btn-light" 
+          <span v-if="player[1].current_hand"><button class = "btn" 
                                                       v-for = "card, index in player[1].current_hand" 
                                                       @click = "playedCard(card.card, index)" 
-                                                      v-bind:class = "{'text-success': player[1].played_card === card.card  }"
-                                                      v-bind:disabled = "card.is_played || nCalls != nPlayers || !player[1].his_turn || !turnIsStarted" > {{card.card}} </button></span>
+                                                      v-bind:class = "player[1].played_card === card.card ? 'btn-primary' : 'btn-light'"
+                                                      v-bind:disabled = "card.is_played || match.current_numbers_calls != match.still_alive_players || !player[1].his_turn || !turn.is_started" > {{card.card}} </button></span>
       </div>
       <div class="nopadding col-3 border" >
           <span><button class = "btn btn-light" 
                         @click = "setCall(i-1)" 
                         v-for = "i in 6" 
-                        v-bind:disabled= "i-1 > nCards || nCards+1-i == totalCalls || player[1].called_current_game || !player[1].his_turn" >{{i-1}}</button></span>
+                        v-bind:disabled= "i-1 > game.n_cards || game.n_cards+1-i == game.total_calls || player[1].called_current_game || !player[1].his_turn" >{{i-1}}</button></span>
       </div>
       <div class="nopadding col-1 border" >
-          calls
+          {{player[1].current_call}}
       </div>
       <div class="nopadding col-1 border" >
           {{player[1].n_lives}}
@@ -34,10 +34,9 @@
 </template>
 
 <script>
-
 export default {
   name: "PlayerRow",
-  props: ['player', 'matchName', 'totalCalls', 'nCards', 'nCalls', 'nPlayers', 'turnIsStarted'],
+  props: ['player', 'match', 'game', 'turn', 'matchName'],
     data () {
     return {
    

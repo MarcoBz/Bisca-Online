@@ -90,6 +90,7 @@ export default {
   methods:{
 
     nextPlayerIndex(currentPlayerIndex, nPlayers){
+
         let nextPlayerIndex = null
         let tempIndex = currentPlayerIndex
 
@@ -120,6 +121,10 @@ export default {
             await matchRef.update({
                 current_player_index: nextPlayerIndex
             })
+
+
+
+
 
             if (nextPlayerIndex == this.turn.first_player_index){
                 await turnRef.update({
@@ -248,25 +253,25 @@ export default {
             }
             await playersRef.update(playerObj)
 
-            const gamesRef = this.$fireDb.ref(`games/${this.$route.params.match}/game_0`)
-            if (newPlayerID == 0){
-                await gamesRef.update({
-                    calls: {
-                        player_0: 0
-                    },
-                    totals: {
-                        player_0: 0
-                    }
-                })
+            // const gamesRef = this.$fireDb.ref(`games/${this.$route.params.match}/game_0`)
+            // if (newPlayerID == 0){
+            //     await gamesRef.update({
+            //         calls: {
+            //             player_0: 0
+            //         },
+            //         totals: {
+            //             player_0: 0
+            //         }
+            //     })
 
-            }
+            // }
 
-            else {
-                let obj = {}
-                obj["player_" + newPlayerID] = 0
-                await gamesRef.child("calls").update(obj)
-                await gamesRef.child("totals").update(obj)
-            }
+            // else {
+            //     let obj = {}
+            //     obj["player_" + newPlayerID] = 0
+            //     await gamesRef.child("calls").update(obj)
+            //     await gamesRef.child("totals").update(obj)
+            // }
 
             } catch (e) {
                 console.log(e)

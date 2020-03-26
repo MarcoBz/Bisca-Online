@@ -13,7 +13,8 @@ export default {
 
     data () {
     return {
-      nLives: 3,
+      nLives: 2,
+      nCards: 1,
       nPlayers: 3,
       totalMatches: null
     }
@@ -53,7 +54,8 @@ export default {
               current_numbers_calls: 0,
               lives_updated: false,
               winner_player_index: null,
-              is_noWinner: false        
+              is_noWinner: false,   
+              still_alive_players: this.nPlayers    
           }
 
           await matchesRef.update(obj)
@@ -64,7 +66,7 @@ export default {
           gameObj["match_" + newMatchID]["game_0"] = {
               is_started: false,
               is_ended: false,
-              n_cards: 3,
+              n_cards: this.nCards,
               dealer_index: 0,
               current_turn: 0,
               total_calls: 0          

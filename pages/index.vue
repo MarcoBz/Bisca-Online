@@ -3,17 +3,46 @@
   <div class="container-fluid">
     <div>
 
-      <div class="row text-center m-3">
+      <div class="row text-center m-2">
         <div class="col">
           <create-match />
         </div>
       </div>
+
+      <div class= "row text-center m-2">
+        <div class = "col-4">
+        </div>
+        <div class = "col-4 border">
+          <div class="form-group row">
+            <label for="inputNplayers" class="col-sm-6 col-form-label text-right">N. Players</label>
+            <div class="col-sm-6">
+              <input type="text" class="form-control" id="inputNplayers" placeholder="Players">
+            </div>
+          </div>
+            <div class="form-group row">
+            <label for="inputNlives" class="col-sm-6 col-form-label text-right">N. Lives</label>
+            <div class="col-sm-6">
+              <input type="text" class="form-control" id="inputNlives" placeholder="Lives">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputPassword">Password</label>
+            <input type="text" class="form-control" id="inputPassword" placeholder="Password">
+          </div>
+        </div>
+        <div class = "col-4">
+        </div>
+      </div>
+
+
+
 
       <div class= "row text-center">
         <div class = "col-12">
           <match-table-head />
         </div>
       </div>
+
       <div class= "row text-center" v-for = "match in matches">
         <div class = "col-12">
           <match-row v-bind:match = match />
