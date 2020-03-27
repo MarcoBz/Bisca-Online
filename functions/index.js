@@ -277,7 +277,7 @@ exports.defineTurnWinner = functions.database.ref('/turns/{match}/{game}/{turn}/
     }
 })
 
-exports.shuffleDealer = functions.database.ref('/matches/{match}/is_started')
+exports.shuffleDealer = functions.database.ref('/matches/{match}/all_ready')
 .onWrite(async (change, context) => {
     let match = context.params.match
     const matchRef = admin.database().ref(`matches/${match}`)
@@ -326,7 +326,7 @@ exports.shuffleCards = functions.database.ref('/games/{match}/{game}/is_started'
             snapshot
         })
         
-        let cards = utils.shuffle(Array.from(Array(40).keys()).map( num => {return num+1}))
+        let cards = utils.shuffle(Array.from(Array(52).keys()).map( num => {return num+1}))
         let handsObj = {}
 
         for(let i = 0; i < nPlayers.val(); i++){

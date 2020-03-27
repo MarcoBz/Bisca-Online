@@ -16,8 +16,8 @@
         <div class="col-12">
             <span><button   class="btn btn-secondary m-3"
                             @click= "startMatch" 
-                            v-bind:disabled = "match.is_started || match.ready_players != match.n_players">Start Match</button></span>
-            <span><button class="btn btn-secondary m-3" @click= "startGame" v-bind:disabled = "!match.lives_updated"> Start Game </button></span>
+                            v-bind:disabled = "match.is_started || !match.all_ready || parseInt(currentPlayer[0].split('_')[1]) != game.dealer_index" >Start Match</button></span>
+            <span><button class="btn btn-secondary m-3" @click= "startGame" v-bind:disabled = "match.is_ended || !match.lives_updated  || parseInt(currentPlayer[0].split('_')[1]) != game.dealer_index"> Start Game </button></span>
         </div>
     </div>  
 
@@ -96,7 +96,6 @@ export default {
         let tempIndex = currentPlayerIndex
 
         while (nextPlayerIndex === null){
-            console.log(nextPlayerIndex)
             tempIndex = tempIndex + 1 == nPlayers ? 0 : tempIndex + 1
             if (!this.players.find(c => c[0] === `player_${tempIndex}`)[1].is_dead){
                 nextPlayerIndex = tempIndex
@@ -147,7 +146,6 @@ export default {
     },
 
     async setCall(payload){
-        console.log('test1')
         try {
 
             let currentPlayerIndex = parseInt(payload.player.split('_')[1])

@@ -55,7 +55,8 @@ export default {
               lives_updated: false,
               winner_player_index: null,
               is_noWinner: false,   
-              still_alive_players: this.nPlayers    
+              still_alive_players: this.nPlayers,
+              all_ready: false    
           }
 
           await matchesRef.update(obj)

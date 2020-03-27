@@ -15,10 +15,6 @@
     <div class= "row text-center">
         <div class="col-12">
             <span><button class="btn btn-secondary m-3" @click= "addPlayer" v-bind:disabled = "match.joined_players == match.n_players"> Join </button></span>
-            <span><button   class="btn btn-secondary m-3"
-                            @click= "startMatch" 
-                            v-bind:disabled = "match.is_started || match.ready_players != match.n_players">Start Match</button></span>
-            <span><button class="btn btn-secondary m-3" @click= "startGame" v-bind:disabled = "!match.lives_updated"> Start Game </button></span>
         </div>
     </div>  
 
@@ -220,10 +216,17 @@ export default {
 
     async updateReady(){
         try {
-          const matchRef = this.$fireDb.ref(`matches/${this.$route.params.match}`)
-          await matchRef.update({
-            'ready_players': this.match.ready_players + 1
-          })
+            const matchRef = this.$fireDb.ref(`matches/${this.$route.params.match}`)
+            await matchRef.update({
+                'ready_players': this.match.ready_players + 1
+            })
+            if (this.match.ready_players === this.match.n_players){
+                await matchRef.update({
+                    'all_ready': true
+                })                
+            }
+
+
         } catch (e) {
           console.log(e)
           return
