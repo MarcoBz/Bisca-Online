@@ -250,31 +250,12 @@ export default {
                 is_dead: false,
                 is_reborn: false,
                 is_winner: false,
-                current_call: 0,
+                current_call: null,
                 called_current_game: false,
-                his_turn: false            
+                his_turn: false,
+                next_index: newPlayerID + 1 === this.match.n_players ? 0 : newPlayerID + 1        
             }
             await playersRef.update(playerObj)
-
-            // const gamesRef = this.$fireDb.ref(`games/${this.$route.params.match}/game_0`)
-            // if (newPlayerID == 0){
-            //     await gamesRef.update({
-            //         calls: {
-            //             player_0: 0
-            //         },
-            //         totals: {
-            //             player_0: 0
-            //         }
-            //     })
-
-            // }
-
-            // else {
-            //     let obj = {}
-            //     obj["player_" + newPlayerID] = 0
-            //     await gamesRef.child("calls").update(obj)
-            //     await gamesRef.child("totals").update(obj)
-            // }
 
             } catch (e) {
                 console.log(e)

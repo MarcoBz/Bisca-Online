@@ -13,7 +13,7 @@ export default {
 
     data () {
     return {
-      nLives: 2,
+      nLives: 3,
       nCards: 1,
       nPlayers: 3,
       totalMatches: null
@@ -81,7 +81,10 @@ export default {
           turnObj["match_" + newMatchID]["game_0"]["turn_0"] = {
               is_started: false,
               is_ended: false,
-              first_player_index: 0
+              first_player_index: 0,
+              egg_played: false,
+              player_with_egg_index: null,
+              egg_notice: false
           }
           await turnsRef.update(turnObj)    
 

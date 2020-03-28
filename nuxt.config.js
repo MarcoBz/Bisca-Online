@@ -45,6 +45,7 @@ export default {
   ** Nuxt.js modules
   */
   modules: [
+    '@nuxtjs/svg',
     'bootstrap-vue/nuxt',
     [
       '@nuxtjs/firebase',
