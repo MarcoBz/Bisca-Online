@@ -4,7 +4,7 @@ const utils = require("./utils.js")
 admin.initializeApp();
 
 exports.updateLives = functions.database.ref('/games/{match}/{game}/is_ended')
-.onWrite(async (change, context) => { 
+.onUpdate(async (change, context) => { 
     let match = context.params.match
     let game = context.params.game 
     const matchRef = admin.database().ref(`matches/${match}`)
@@ -172,7 +172,7 @@ exports.updateLives = functions.database.ref('/games/{match}/{game}/is_ended')
 })
 
 exports.defineTurnWinner = functions.database.ref('/turns/{match}/{game}/{turn}/is_ended')
-.onWrite(async (change, context) => {
+.onUpdate(async (change, context) => {
     let match = context.params.match
     let game = context.params.game
     let turn = context.params.turn
@@ -323,7 +323,7 @@ exports.defineTurnWinner = functions.database.ref('/turns/{match}/{game}/{turn}/
 })
 
 exports.shuffleDealer = functions.database.ref('/matches/{match}/all_ready')
-.onWrite(async (change, context) => {
+.onUpdate(async (change, context) => {
     let match = context.params.match
     const matchRef = admin.database().ref(`matches/${match}`)
     const gameRef = admin.database().ref(`games/${match}/game_0`)
@@ -345,7 +345,7 @@ exports.shuffleDealer = functions.database.ref('/matches/{match}/all_ready')
 })
 
 exports.shuffleCards = functions.database.ref('/games/{match}/{game}/is_started')
-.onWrite(async (change, context) => {
+.onUpdate(async (change, context) => {
     let match = context.params.match
     const matchRef = admin.database().ref(`matches/${match}`)
     let currentGame = await matchRef.child('current_game').once('value',(snapshot) => {

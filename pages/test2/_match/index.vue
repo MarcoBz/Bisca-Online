@@ -42,6 +42,7 @@
 </template>
 
 <script>
+import axios from 'axios'
 import PlayerRow from "~/components/Test/PlayerRow.vue"
 import PlayerTableHead from "~/components/Test/PlayerTableHead.vue"
 import DetailsRow from "~/components/Test/DetailsRow.vue"
@@ -256,7 +257,9 @@ export default {
                 next_index: newPlayerID + 1 === this.match.n_players ? 0 : newPlayerID + 1        
             }
             await playersRef.update(playerObj)
-
+            let newPlayerObj = {}
+            newPlayerObj[this.match.joined_players-1] = "player_" + [this.match.joined_players-1]
+            await matchRef.child('all_players').update(newPlayerObj)
             } catch (e) {
                 console.log(e)
                 return

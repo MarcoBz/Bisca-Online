@@ -27,6 +27,7 @@ export default {
   },
 
   methods: {
+
     async createMatch() {
       try {
         let newMatchID = this.totalMatches + 1
@@ -60,7 +61,10 @@ export default {
           }
 
           await matchesRef.update(obj)
-
+          let newMatchObj = {}
+          newMatchObj[newMatchID] = "match_" + newMatchID
+          await totalMatchesUpdate.child('all_matches').update(newMatchObj)
+ 
           const gamesRef = this.$fireDb.ref(`games`)
           let gameObj = {}
           gameObj["match_" + newMatchID] = {}
