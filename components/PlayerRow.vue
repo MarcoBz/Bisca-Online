@@ -16,37 +16,37 @@
       <div class="nopadding col-1 border" v-else>
           <button class="btn btn-warning" @click = "playerIsReady"> Ready </button>
       </div>
-      <div class="nopadding col-2 border" v-bind:class = "{'bg-success': player[1].his_turn}" >
+      <div class="nopadding col-1 border" v-bind:class = "{'bg-success': player[1].his_turn}" >
           {{player[1].player_name}}
       </div>
-      <div class="nopadding col-3 border" v-if="game.n_cards === 1">
+      <div class="nopadding col-4 border" v-if="game.n_cards === 1">
         <span><button class = "btn btn-dark" 
                       v-for = "card, index in player[1].current_hand"
                       v-bind:disabled = "player[1].played_card != null || !player[1].his_turn || !turn.is_started" 
                       @click = "playedCard(card.card, index)">
                         <svg
-                            width="170"
-                            height="245"
+                            width="85"
+                            height="125"
                             xmlns="http://www.w3.org/2000/svg"
                             xmlns:xlink="http://www.w3.org/1999/xlink"
                             >
-                            <use v-bind= "{ 'xlink:href': require('../../assets/svg-cards-indented.svg') + `#back`}" x="0" y="0"/>
+                            <use v-bind= "{ 'xlink:href': require('../assets/svg-cards-indented.svg') + `#back`}" x="0" y="0" transform="scale(0.4)"/>
                         </svg>                       
                       </button></span>
       </div>
-      <div class="nopadding col-3 border" v-else>
+      <div class="nopadding col-4 border" v-else>
           <span v-if="player[1].current_hand"><button class = "btn" 
                                                       v-for = "card, index in player[1].current_hand" 
                                                       @click = "playedCard(card.card, index)" 
                                                       v-bind:class = "player[1].played_card === card.card ? 'btn-primary' : 'btn-light'"
                                                       v-bind:disabled = "card.is_played || match.current_numbers_calls != match.still_alive_players || !player[1].his_turn || !turn.is_started" > 
                                                       <svg
-                                                          width="170"
-                                                          height="245"
+                                                          width="85"
+                                                          height="125"
                                                           xmlns="http://www.w3.org/2000/svg"
                                                           xmlns:xlink="http://www.w3.org/1999/xlink"
                                                           >
-                                                          <use v-bind= "{ 'xlink:href': require('../../assets/svg-cards-indented.svg') + `#${cardsReference[card.card]}`}" x="0" y="0"/>
+                                                          <use v-bind= "{ 'xlink:href': require('../assets/svg-cards-indented.svg') + `#${cardsReference[card.card]}`}" x="0" y="0" transform="scale(0.4)"/>
                                                       </svg>                                                         
                                                       </button></span>
       </div>

@@ -14,32 +14,32 @@
           Winner
       </div>
       <div class="nopadding col-1 border" v-else>
-          <button class="btn btn-warning" > Joined </button>
+           Joined 
       </div>
-      <div class="nopadding col-2 border" v-bind:class = "{'bg-success': player[1].his_turn}" >
+      <div class="nopadding col-1 border" v-bind:class = "{'bg-success': player[1].his_turn}" >
           {{player[1].player_name}}
       </div>
-      <div class="nopadding col-3 border" v-if="game.n_cards === 1">
+      <div class="nopadding col-4 border" v-if="game.n_cards === 1">
           <span v-for = "card in player[1].current_hand"><button class = "btn btn-primary" disabled>                        
             <svg
-                width="170"
-                height="245"
+                width="85"
+                height="125"
                 xmlns="http://www.w3.org/2000/svg"
                 xmlns:xlink="http://www.w3.org/1999/xlink"
                 >
-                <use v-bind= "{ 'xlink:href': require('../../assets/svg-cards-indented.svg') + `#${cardsReference[card.card]}`}" x="0" y="0"/>
+                <use v-bind= "{ 'xlink:href': require('../assets/svg-cards-indented.svg') + `#${cardsReference[card.card]}`}" x="0" y="0" transform="scale(0.4)"/>
             </svg>  
           </button></span>
       </div>
-      <div class="nopadding col-3 border" v-else>
+      <div class="nopadding col-4 border" v-else>
           <span   v-if = "player[1].played_card"><button class = "btn btn-primary" disabled>
             <svg
-                width="170"
-                height="245"
+                width="85"
+                height="125"
                 xmlns="http://www.w3.org/2000/svg"
                 xmlns:xlink="http://www.w3.org/1999/xlink"
                 >
-                <use v-bind= "{ 'xlink:href': require('../../assets/svg-cards-indented.svg') + `#${cardsReference[player[1].played_card]}`}" x="0" y="0"/>
+                <use v-bind= "{ 'xlink:href': require('../assets/svg-cards-indented.svg') + `#${cardsReference[player[1].played_card]}`}" x="0" y="0" transform="scale(0.4)"/>
             </svg>
           </button></span>
       </div>

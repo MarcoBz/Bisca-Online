@@ -14,7 +14,7 @@
           Status
       </div>
       <div class="nopadding col-3 border" >
-          <button class = "btn btn-primary" disabled> Join </button>
+          <button class = "btn btn-primary" @click= "goToMatch(match[0])"> Go To </button>
       </div>
     </div>
   </div>
@@ -39,6 +39,9 @@ export default {
 
   methods: {
 
+    goToMatch(match){
+      this.$router.push({ name: 'match', params: { passedMatch: match }})
+    }
 
   },
 

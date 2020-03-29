@@ -1,13 +1,13 @@
 <template>
   <div class="container-fluid" >
     <div class= "row text-center nopadding row-eq-height font-weight-bold" >
-      <div class="nopadding col-2 border">
-          Ready
+      <div class="nopadding col-1 border">
+          Status
       </div>
-      <div class="nopadding col-2 border" >
+      <div class="nopadding col-1 border" >
           Name 
       </div>
-      <div class="nopadding col-3 border" >
+      <div class="nopadding col-4 border" >
           Hand
       </div>
       <div class="nopadding col-3 border" >
@@ -18,6 +18,9 @@
       </div>
       <div class="nopadding col-1 border" >
           Lives
+      </div>
+      <div class="nopadding col-1 border" >
+          Turn Total
       </div>
     </div>
   </div>
