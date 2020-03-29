@@ -31,16 +31,12 @@ export default {
     }
   },
 
-//   created(){
-//       this.$fireDb.ref(`matches/${this.match}`).on('value', (snapshot) => {
-//         this.match = snapshot.val();
-//       })
-//   },
-
   methods: {
 
     goToMatch(match){
-      this.$router.push({ name: 'match', params: { passedMatch: match }})
+      this.$router.push({
+          path: '/' + this.match
+      })
     }
 
   },

@@ -115,6 +115,9 @@ export default {
 
     methods:{
         goToTable(player){
+            this.$router.push({
+                path: '/' + this.match
+            })
             this.$router.push({ name: 'table', params: { passedMatch: this.inputMatch, passedPlayer: player }})
         },
 
