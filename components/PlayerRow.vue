@@ -43,10 +43,11 @@
                                                       <svg
                                                           width="85"
                                                           height="125"
+                                                          viewBox="0 0 169.075 244.640"
                                                           xmlns="http://www.w3.org/2000/svg"
                                                           xmlns:xlink="http://www.w3.org/1999/xlink"
                                                           >
-                                                          <use v-bind= "{ 'xlink:href': require('../assets/svg-cards-indented.svg') + `#${cardsReference[card.card]}`}" x="0" y="0" transform="scale(0.4)"/>
+                                                          <use v-bind= "{ 'xlink:href': require('../assets/svg-cards-indented.svg') + `#${cardsReference[card.card]}`}" x="0" y="0" />
                                                       </svg>                                                         
                                                       </button></span>
       </div>
@@ -131,7 +132,7 @@ export default {
         17: 'diamond_10',
         18: 'diamond_9',
         19: 'diamond_8',
-        10: 'diamond_7',
+        20: 'diamond_7',
         21: 'diamond_6',
         22: 'diamond_5',
         23: 'diamond_4',
