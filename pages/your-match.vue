@@ -148,10 +148,6 @@ export default {
                 current_player_index: nextPlayerIndex
             })
 
-
-
-
-
             if (nextPlayerIndex == this.turn.first_player_index){
                 await turnRef.update({
                     is_ended: true
@@ -273,6 +269,10 @@ export default {
 
             const playersRef = this.$fireDb.ref(`players/${this.inputMatch}`)
             let playerObj = {}
+            let admittedCallsObj= {}
+            for (let i = 0; i <= this.game.n_cards; i++){
+                admittedCallsObj[parseInt(i)] = false
+            }
             playerObj["player_" + newPlayerID] = {
                 is_ready: false,
                 player_name: this.names[this.match.joined_players - 1 ],
@@ -283,12 +283,10 @@ export default {
                 current_call: null,
                 called_current_game: false,
                 his_turn: false,
-                next_index: newPlayerID + 1 === this.match.n_players ? 0 : newPlayerID + 1        
+                next_index: newPlayerID + 1 === this.match.n_players ? 0 : newPlayerID + 1,
+                admitted_calls: admittedCallsObj        
             }
             await playersRef.update(playerObj)
-            let newPlayerObj = {}
-            newPlayerObj[this.match.joined_players-1] = "player_" + [this.match.joined_players-1]
-            await matchRef.child('all_players').update(newPlayerObj)
             } catch (e) {
                 console.log(e)
                 return

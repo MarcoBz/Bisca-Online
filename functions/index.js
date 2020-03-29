@@ -240,7 +240,7 @@ exports.defineTurnWinner = functions.database.ref('/turns/{match}/{game}/{turn}/
             const gamesRef = admin.database().ref(`games`)
             let gameObj = {}
             gameObj = {}
-            let newCards = nCards.val() - 1 == 0 ? 3 : nCards.val() - 1
+            let newCards = nCards.val() - 1 == 0 ? 5 : nCards.val() - 1
             // let nextDealer = utils.nextDealerIndex(currentDealer.val(), nPlayers.val(), players)
             let nextDealer = players.find(c => c[0] === `player_${currentDealer.val()}`)[1].next_index
             gameObj["game_" + (parseInt(game.split('_')[1]) + 1).toString()] = {
@@ -274,7 +274,10 @@ exports.defineTurnWinner = functions.database.ref('/turns/{match}/{game}/{turn}/
                 current_game: parseInt(game.split('_')[1]) + 1,
                 current_player_index: nextDealer
             }) 
-
+            let admittedCallsObj= {}
+            for (let i = 0; i <= newCards; i++){
+                admittedCallsObj[parseInt(i)] = false
+            }
             for(let i = 0; i < nPlayers.val(); i++){
 
                 await playersRef.child(`player_${i}`).update({
@@ -282,7 +285,9 @@ exports.defineTurnWinner = functions.database.ref('/turns/{match}/{game}/{turn}/
                     current_call: null,
                     current_hand: null,
                     his_turn: false,
-                    played_card: null
+                    played_card: null,
+                    admitted_calls: null,
+                    admitted_calls: admittedCallsObj 
                 }) 
             }
 
@@ -366,6 +371,9 @@ exports.shuffleCards = functions.database.ref('/games/{match}/{game}/is_started'
         let nCards = await gameRef.child('n_cards').once('value',(snapshot) => {
             snapshot
         })
+        let totalCalls = await gameRef.child('total_calls').once('value',(snapshot) => {
+            snapshot
+        })    
         let dealer_index = await gameRef.child('dealer_index').once('value',(snapshot) => {
             snapshot
         })
@@ -393,9 +401,25 @@ exports.shuffleCards = functions.database.ref('/games/{match}/{game}/is_started'
                     handsObj["player_" + i]["card_" + j] = hand[j]
                     let playerRef = admin.database().ref(`players/${match}/player_${i}`)
                     if (i === dealer_index.val()) {
+
+                        let admittedCallsObj= {}
+                        if (nCards.val() > 1){
+                            for (let i = 0; i <= nCards.val(); i++){
+                                admittedCallsObj[parseInt(i)] = (i > nCards.val() || nCards.val() == totalCalls.val() + i) ? false : true
+                            }
+                        }
+
+                        else {
+                            admittedCallsObj= {
+                                0: true,
+                                1: true
+                            }
+                        }
+
                         await playerRef.update({
-                            his_turn: true
-                        })                    
+                            his_turn: true,
+                            admitted_calls: admittedCallsObj
+                        })                     
                     }
                     await playerRef.update({
                         current_hand: handsObj["player_" + i]

@@ -53,22 +53,22 @@
 
       <div class="nopadding col-3 border" v-if="game.n_cards === 1">
           <span><button class = "btn"
-                        @click = "setCall(1); currentCall += 1"
+                        @click = "setCall(1);"
                         v-bind:class = "player[1].current_call === 1 ? 'btn-secondary' : 'btn-light'"
-                        v-bind:disabled= " (player[1].next === game.dealer_index && game.total_calls - currentCall  === 1)|| !player[1].his_turn && !player[1].called_current_game || ( player[1].called_current_game && players.find(c => c[0] === `player_${player[1].next_index}`)[1].called_current_game)"
+                        v-bind:disabled= "!player[1].admitted_calls[1] || !player[1].his_turn && !player[1].called_current_game || ( player[1].called_current_game && players.find(c => c[0] === `player_${player[1].next_index}`)[1].called_current_game)"
           >Win</button></span>
           <span><button class = "btn"
-                        @click = "setCall(0)"
+                        @click = "setCall(0);"
                         v-bind:class = "player[1].current_call === 0 ? 'btn-secondary' : 'btn-light'"
-                        v-bind:disabled= " game.total_calls - currentCall  === 1 || !player[1].his_turn && !player[1].called_current_game || ( player[1].called_current_game && players.find(c => c[0] === `player_${player[1].next_index}`)[1].called_current_game)"
-          >Lose</button></span>          
+                        v-bind:disabled= "!player[1].admitted_calls[0] || !player[1].his_turn && !player[1].called_current_game || ( player[1].called_current_game && players.find(c => c[0] === `player_${player[1].next_index}`)[1].called_current_game)"
+          >Lose</button></span>           
       </div>
       <div class="nopadding col-3 border" v-else>
                   <span><button class = "btn" 
-                        @click = "setCall(i-1); currentCall = (i - 1)" 
+                        @click = "setCall(i-1)" 
                         v-for = "i in 6" 
                         v-bind:class = "player[1].current_call === i-1 ? 'btn-secondary' : 'btn-light'"
-                        v-bind:disabled= "i-1 > game.n_cards || game.n_cards+1-i == game.total_calls - currentCall  ||  !player[1].his_turn && !player[1].called_current_game || ( player[1].called_current_game && players.find(c => c[0] === `player_${player[1].next_index}`)[1].called_current_game)" >
+                        v-bind:disabled= "!player[1].admitted_calls[i-1] ||  !player[1].his_turn && !player[1].called_current_game || ( player[1].called_current_game && players.find(c => c[0] === `player_${player[1].next_index}`)[1].called_current_game)" >
                         {{ i-1 }}
                         </button></span>
       </div>
@@ -111,7 +111,6 @@ export default {
     data () {
     return {
       isClicked: false,
-      currentCall: 0,
       cardsReference: {
         1: 'heart_king',
         2: 'heart_queen',
@@ -211,7 +210,6 @@ export default {
     },
 
     async playedCard(card, index){
-          if(this.curentCall != 0) this.currentCall = 0
           try {
             let cardIndex = parseInt(index.split('_')[1])
             const playerRef = this.$fireDb.ref(`players/${this.matchName}/${this.player[0]}`)

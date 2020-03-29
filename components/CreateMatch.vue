@@ -14,7 +14,7 @@ export default {
     data () {
     return {
       nLives: 3,
-      nCards: 1,
+      nCards: 5,
       nPlayers: 3,
       totalMatches: null
     }
@@ -61,9 +61,6 @@ export default {
           }
 
           await matchesRef.update(obj)
-          let newMatchObj = {}
-          newMatchObj[newMatchID] = "match_" + newMatchID
-          await totalMatchesUpdate.child('all_matches').update(newMatchObj)
  
           const gamesRef = this.$fireDb.ref(`games`)
           let gameObj = {}

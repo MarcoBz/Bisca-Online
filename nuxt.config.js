@@ -33,16 +33,6 @@ export default {
   css: [
   ],
 
-  generate: {
-    routes () {
-      return axios.get('https://bisca-online.firebaseio.com/matches/match_6/all_players.json')
-        .then((res) => {
-          return res.data.map((player) => {
-            return '/test2/match_6/' + player
-          })
-        })
-    }
-  },
   /*
   ** Plugins to load before mounting the App
   */

@@ -148,7 +148,6 @@ export default {
             obj[payload.player] = payload.card
             await turnRef.child('cards').update(obj) 
             const gameRef = this.$fireDb.ref(`games/${this.inputMatch}/game_${this.match.current_game}`)
-            let eggPlayerIndex = parseInt(payload.player.split('_')[1])
             await gameRef.update({egg_changed: true})
         }
 
@@ -190,7 +189,7 @@ export default {
             let eggIsPlayed = await turnRef.child('egg_played').once('value',(snapshot) => {
                 snapshot
             })
-            let eggPlayerIndex = await turnRef.child('egg_played').once('value',(snapshot) => {
+            let eggPlayerIndex = await turnRef.child('player_with_egg_index').once('value',(snapshot) => {
                 snapshot
             })
 
@@ -198,11 +197,11 @@ export default {
 
                 if (eggIsPlayed.val()){
                     const playersRef= this.$fireDb.ref(`players/${this.inputMatch}`)
-                    await playersRef.child(`player_${eggPlayerIndex}`).update({
+                    await playersRef.child(`player_${eggPlayerIndex.val()}`).update({
                         his_turn: true 
                     })
                     await matchRef.update({
-                        current_player_index: eggPlayerIndex
+                        current_player_index: eggPlayerIndex.val()
                     })
                     await turnRef.update({
                         egg_notice: true
@@ -273,6 +272,27 @@ export default {
                     first_player_index: this.game.dealer_index,
                 })
 
+            }
+            else{
+                let admittedCallsObj= {}
+                if(this.game.n_cards > 1){
+                    for (let i = 0; i <= this.game.n_cards; i++){
+                        console.log( i , this.game.n_cards, this.game.total_calls, (i > this.game.n_cards || this.game.n_cards == this.game.total_calls + 1))
+                        admittedCallsObj[parseInt(i)] = (i > this.game.n_cards || this.game.n_cards == this.game.total_calls + i) ? false : true
+                    }
+                }
+                else{
+                    let nextAfterPlayerIndex = await nextPlayerRef.child(`next_index`).once('value',(snapshot) => {
+                        snapshot
+                    })  
+                    admittedCallsObj= {
+                        0: this.game.total_calls === 1 ? false : true,
+                        1: (nextAfterPlayerIndex.val() === this.game.dealer_index && this.game.total_calls === 0) ? false : true,
+                    }
+                }
+                await nextPlayerRef.update({
+                    admitted_calls: admittedCallsObj
+                })
             }
 
         } catch (e) {
