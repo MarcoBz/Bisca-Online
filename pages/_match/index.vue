@@ -1,27 +1,7 @@
 <template>
   <div class="container-fluid">
 
-    <div class= "row text-center m-2">
-        <div class = "col-4">
-        </div>
-        <div class = "col-4 border">
-            <div class="form-group row">
-            <label for="inputMatch" class="col-sm-6 col-form-label text-right">Match:</label>
-            <div class="col-sm-6">
-                <input type="text" class="form-control" placeholder="Match" v-model= "yourMatch" >
-            </div>
-            </div>
-            <div class="row">
-            <div class="col-sm-12">
-                <button class="btn btn-primary m-2" @click= "goToMatch" v-bind:disabled="!yourMatch">Go to match</button>
-            </div>
-            </div>
-        </div>
-        <div class = "col-4">
-        </div>
-    </div>
-
-    <div v-if = "showMatch && match && game && turn">
+    <div v-if = "match && game && turn">
         <div class= "row text-center">
         <div class = "col-12">
             <details-table-head />
@@ -71,7 +51,6 @@ import DetailsRow from "~/components/DetailsRow.vue"
 import DetailsTableHead from "~/components/DetailsTableHead.vue"
 
 export default {
-    props: ['passedMatch'],
     components: {
         OthersPlayersRow,
         PlayerTableHead,
@@ -81,9 +60,7 @@ export default {
 
     data () {
         return {
-            yourMatch: null,
-            inputMatch: this.$route.params.passedMatch,
-            showMatch: false,
+            inputMatch: this.$route.params.match,
             match: null,
             players: null,
             game: null,
@@ -116,32 +93,7 @@ export default {
     methods:{
         goToTable(player){
             this.$router.push({
-                path: '/' + this.match
-            })
-            this.$router.push({ name: 'table', params: { passedMatch: this.inputMatch, passedPlayer: player }})
-        },
-
-        async goToMatch(){
-
-            this.inputMatch = this.yourMatch
-            this.showMatch = true
-            this.match= null
-            this.players= null
-            this.game= null
-            this.turn= null
-            this.$fireDb.ref(`players/${this.inputMatch}`).on('value', (snapshot) => {
-                if(snapshot.val()) this.players = Object.entries(snapshot.val());
-                
-            })
-
-            this.$fireDb.ref(`matches/${this.inputMatch}`).on('value', (snapshot) => {
-                this.match = snapshot.val();
-                this.$fireDb.ref(`games/${this.inputMatch}/game_${this.match.current_game}`).on('value', (snapshot) => {
-                    this.game = snapshot.val();
-                    this.$fireDb.ref(`turns/${this.inputMatch}/game_${this.match.current_game}/turn_${this.match.current_turn}`).on('value', (snapshot) => {
-                        this.turn = snapshot.val();
-                    })
-                })
+                path: `/${this.$route.params.match}/${player}`
             })
         },
 

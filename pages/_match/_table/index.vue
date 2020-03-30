@@ -1,33 +1,7 @@
 <template>
   <div class="container-fluid">
 
-    <div class= "row text-center m-2">
-        <div class = "col-4">
-        </div>
-        <div class = "col-4 border">
-            <div class="form-group row">
-                <label for="inputMatch" class="col-sm-6 col-form-label text-right">Match:</label>
-                <div class="col-sm-6">
-                    <input type="text" class="form-control" id="inputMatch" placeholder="Match" v-model= "yourMatch" >
-                </div>
-            </div>
-            <div class="form-group row">
-                <label for="inputPlayer" class="col-sm-6 col-form-label text-right">Player:</label>
-                <div class="col-sm-6">
-                    <input type="text" class="form-control" id="inputPlayer" placeholder="Player" v-model= "yourID" >
-                </div>
-            </div>
-            <div class="row">
-            <div class="col-sm-12">
-                <button class="btn btn-primary m-2" @click= "goToTable" v-bind:disabled="!yourMatch || !yourID">Go to Table</button>
-            </div>
-            </div>
-        </div>
-        <div class = "col-4">
-        </div>
-    </div>
-
-    <div v-if = "showTable && match && game && turn">
+    <div v-if = " match && game && turn">
         <div class= "row text-center">
         <div class = "col-12">
             <details-table-head />
@@ -88,7 +62,6 @@ import DetailsTableHead from "~/components/DetailsTableHead.vue"
 
 export default {
 
-    props: ['passedMatch', 'passedPlayer'],
     components: {
         PlayerRow,
         OthersPlayersRow,
@@ -99,10 +72,8 @@ export default {
 
     data () {
         return {
-            yourMatch: null,
-            inputMatch: this.$route.params.passedMatch,
-            yourID: null,
-            inputPlayer: this.$route.params.passedPlayer,
+            inputMatch: this.$route.params.match,
+            inputPlayer: this.$route.params.table,
             showTable: false,
             match: null,
             currentPlayer : null,
@@ -115,7 +86,6 @@ export default {
 
     async mounted(){
         if(this.inputMatch && this.inputPlayer){
-            this.showTable = true
             this.$fireDb.ref(`players/${this.inputMatch}`).on('value', (snapshot) => {
                 if(snapshot.val()) {
                     this.players = Object.entries(snapshot.val());
@@ -138,34 +108,6 @@ export default {
     },
 
     methods:{
-
-
-        async goToTable(){
-            this.inputMatch = this.yourMatch
-            this.inputPlayer = this.yourID
-            this.showTable = true
-            this.match= null
-            this.players= null
-            this.game= null
-            this.turn= null
-            this.$fireDb.ref(`players/${this.inputMatch}`).on('value', (snapshot) => {
-                if(snapshot.val()) {
-                    this.players = Object.entries(snapshot.val());
-                    this.currentPlayer  = this.players.find(c => c[0] === this.inputPlayer)
-                }
-                
-            })
-
-            this.$fireDb.ref(`matches/${this.inputMatch}`).on('value', (snapshot) => {
-                this.match = snapshot.val();
-                this.$fireDb.ref(`games/${this.inputMatch}/game_${this.match.current_game}`).on('value', (snapshot) => {
-                    this.game = snapshot.val();
-                    this.$fireDb.ref(`turns/${this.inputMatch}/game_${this.match.current_game}/turn_${this.match.current_turn}`).on('value', (snapshot) => {
-                        this.turn = snapshot.val();
-                    })
-                })
-            })
-        },
 
         async eggNoticeSubmitted(payload){
             
@@ -362,10 +304,15 @@ export default {
 
         async updateReady(){
             try {
-            const matchRef = this.$fireDb.ref(`matches/${this.inputMatch}`)
-            await matchRef.update({
-                'ready_players': this.match.ready_players + 1
-            })
+                const matchRef = this.$fireDb.ref(`matches/${this.inputMatch}`)
+                await matchRef.update({
+                    'ready_players': this.match.ready_players + 1
+                })
+                if (this.match.ready_players === this.match.n_players){
+                    await matchRef.update({
+                        'all_ready': true
+                    })                
+                }
             } catch (e) {
             console.log(e)
             return

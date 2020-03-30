@@ -43,6 +43,9 @@ export default {
   */
   buildModules: [
   ],
+  generate: {
+    fallback: true
+  },
   /*
   ** Nuxt.js modules
   */

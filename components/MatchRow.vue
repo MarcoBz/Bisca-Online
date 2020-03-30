@@ -34,8 +34,9 @@ export default {
   methods: {
 
     goToMatch(match){
+      console.log(match)
       this.$router.push({
-          path: '/' + this.match
+          path: `/${match}`
       })
     }
 
