@@ -109,38 +109,6 @@ exports.updateLives = functions.database.ref('/games/{match}/{game}/is_ended')
 
         }
 
-        allPlayersDead.forEach(async player => {
-            console.log('foreach', player)
-            if(!player.is_dead) {
-                let next = await playersRef.child(`player_${player.playerIndex}/next_index`).once('value',(snapshot) => {
-                    snapshot
-                }) 
-                next = next.val() 
-                let updatedNext = null
-
-                while(updatedNext === null){
-
-                    console.log('next', player.playerIndex, next)
-                    if(allPlayersDead.find(c => c.playerIndex === next).is_dead) {
-
-                        if (next == nPlayers.val()) next = 0
-                        else next += 1 
-                        if (!allPlayersDead.find(c => c.playerIndex === next).is_dead){
-                            updatedNext = next
-                        }
-
-                    }
-                    else updatedNext = next
-                }
-
-                await playersRef.child(`player_${player.playerIndex}`).update({
-                    next_index: updatedNext
-                }) 
-            }
-
-        })
-
-
         if (rebornActionDone){
             await matchRef.update({
                 reborn_action : true
@@ -155,6 +123,7 @@ exports.updateLives = functions.database.ref('/games/{match}/{game}/is_ended')
         let stillInGame = allPlayers.filter(player => {
             return player.lives > 0
         })
+
         if (stillInGame.length === 1){
             await matchRef.update({
                 winner_player_index: parseInt(stillInGame[0].player.split('_')[1]),
@@ -172,6 +141,119 @@ exports.updateLives = functions.database.ref('/games/{match}/{game}/is_ended')
                 is_ended: true,
                 end_date: (new Date()).toISOString(),
             }) 
+        }
+        else {
+
+            allPlayersDead.forEach(async player => {
+                console.log('foreach', player)
+                if(!player.is_dead) {
+                    let next = await playersRef.child(`player_${player.playerIndex}/next_index`).once('value',(snapshot) => {
+                        snapshot
+                    }) 
+                    next = next.val() 
+                    let updatedNext = null
+    
+                    while(updatedNext === null){
+    
+                        console.log('next', player.playerIndex, next)
+                        if(allPlayersDead.find(c => c.playerIndex === next).is_dead) {
+    
+                            if (next == nPlayers.val()) next = 0
+                            else next += 1 
+                            if (!allPlayersDead.find(c => c.playerIndex === next).is_dead){
+                                updatedNext = next
+                            }
+    
+                        }
+                        else updatedNext = next
+                    }
+    
+                    await playersRef.child(`player_${player.playerIndex}`).update({
+                        next_index: updatedNext
+                    }) 
+                }
+    
+            })
+
+            players = await playersRef.once('value',(snapshot) => {
+                snapshot
+            }) 
+            players = Object.entries(players.val())
+            
+            const gamesRef = admin.database().ref(`games`)
+            let gameObj = {}
+            gameObj = {}
+            let nCards = await gameRef.child('n_cards').once('value',(snapshot) => {
+                snapshot
+            })
+            let newCards = nCards.val() - 1 == 0 ? 5 : nCards.val() - 1
+            
+            let nextGame = "game_" + (parseInt(game.split('_')[1]) + 1).toString()
+            let currentDealer = await gameRef.child('dealer_index').once('value',(snapshot) => {
+                snapshot
+            })
+            
+            let nextDealer = null
+            let tempIndex = currentDealer.val() + 1 === nPlayers.val() ? 0 : currentDealer.val() + 1
+            while(nextDealer === null){
+            
+                if (players.find(c => c[0] === `player_${tempIndex}`)[1].is_dead) tempIndex = tempIndex + 1 === nPlayers.val() ? 0 : tempIndex + 1
+                else nextDealer = tempIndex
+            
+            }
+            
+            gameObj[nextGame] = {
+                is_started: false,
+                is_ended: false,
+                n_cards: newCards,
+                dealer_index: nextDealer,
+                current_turn: 0,
+                total_calls: 0,          
+            }
+            
+            await gamesRef.child(`${match}`).update(gameObj) 
+            
+            const turnsRef = admin.database().ref(`turns`)
+            let turnObj = {}
+            turnObj = {}
+            turnObj[nextGame] = {}
+            turnObj[nextGame]["turn_0"] = {
+                is_started: false,
+                is_ended: false,
+                first_player_index: nextDealer,
+                egg_played: false,
+                player_with_egg_index: null,
+                egg_notice: false
+            }
+            await turnsRef.child(`${match}`).update(turnObj)           
+            await matchRef.update({
+                current_turn: 0,
+                current_total_calls: 0,
+                current_numbers_calls: 0,
+                current_game: parseInt(game.split('_')[1]) + 1,
+                current_player_index: nextDealer
+            }) 
+            let admittedCallsObj= {}
+            for (let i = 0; i <= newCards; i++){
+                admittedCallsObj[parseInt(i)] = false
+            }
+            for(let i = 0; i < nPlayers.val(); i++){
+            
+                await playersRef.child(`player_${i}`).update({
+                    called_current_game: false,
+                    current_call: null,
+                    current_hand: null,
+                    his_turn: false,
+                    played_card: null,
+                    admitted_calls: null,
+                    admitted_calls: admittedCallsObj 
+                }) 
+            }
+
+
+
+
+
         }
 
     }
@@ -223,76 +305,9 @@ exports.defineTurnWinner = functions.database.ref('/turns/{match}/{game}/{turn}/
         })
 
         if (parseInt(turn.split('_')[1]) === nCards.val() - 1){
-            let playersRef = admin.database().ref(`players/${match}`)
-            players = await playersRef.once('value',(snapshot) => {
-                snapshot
-            }) 
-
-            players = Object.entries(players.val())
-
-            let currentDealer = await gameRef.child('dealer_index').once('value',(snapshot) => {
-                snapshot
-            })
-            await gameRef.update({
-                is_ended: true
-            })     
-            const gamesRef = admin.database().ref(`games`)
-            let gameObj = {}
-            gameObj = {}
-            let newCards = nCards.val() - 1 == 0 ? 5 : nCards.val() - 1
-            // let nextDealer = utils.nextDealerIndex(currentDealer.val(), nPlayers.val(), players)
-            let nextDealer = players.find(c => c[0] === `player_${currentDealer.val()}`)[1].next_index
-            gameObj["game_" + (parseInt(game.split('_')[1]) + 1).toString()] = {
-                is_started: false,
-                is_ended: false,
-                n_cards: newCards,
-                dealer_index: nextDealer,
-                current_turn: 0,
-                total_calls: 0,          
-            }
-
-            await gamesRef.child(`${match}`).update(gameObj) 
-
-            const turnsRef = admin.database().ref(`turns`)
-            let turnObj = {}
-            turnObj = {}
-            turnObj["game_" + (parseInt(game.split('_')[1]) + 1).toString()] = {}
-            turnObj["game_" + (parseInt(game.split('_')[1]) + 1).toString()]["turn_0"] = {
-                is_started: false,
-                is_ended: false,
-                first_player_index: nextDealer,
-                egg_played: false,
-                player_with_egg_index: null,
-                egg_notice: false
-            }
-            await turnsRef.child(`${match}`).update(turnObj)           
-            await matchRef.update({
-                current_turn: 0,
-                current_total_calls: 0,
-                current_numbers_calls: 0,
-                current_game: parseInt(game.split('_')[1]) + 1,
-                current_player_index: nextDealer
-            }) 
-            let admittedCallsObj= {}
-            for (let i = 0; i <= newCards; i++){
-                admittedCallsObj[parseInt(i)] = false
-            }
-            for(let i = 0; i < nPlayers.val(); i++){
-
-                await playersRef.child(`player_${i}`).update({
-                    called_current_game: false,
-                    current_call: null,
-                    current_hand: null,
-                    his_turn: false,
-                    played_card: null,
-                    admitted_calls: null,
-                    admitted_calls: admittedCallsObj 
-                }) 
-            }
             await gameRef.update({
                 is_ended: true
             })  
-
         }
         else{
             let nextTurnIndex = parseInt(turn.split('_')[1]) + 1

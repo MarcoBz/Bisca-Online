@@ -302,7 +302,6 @@ export default {
                     let admittedCallsObj= {}
                     if(this.game.n_cards > 1){
                         for (let i = 0; i <= this.game.n_cards; i++){
-                            console.log( i , this.game.n_cards, this.game.total_calls, (i > this.game.n_cards || this.game.n_cards == this.game.total_calls + 1))
                             admittedCallsObj[parseInt(i)] = (i > this.game.n_cards || this.game.n_cards == this.game.total_calls + i) ? false : true
                         }
                     }

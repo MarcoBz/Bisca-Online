@@ -46,6 +46,21 @@ export default {
   generate: {
     fallback: true
   },
+
+  router: {
+    extendRoutes (routes, resolve) {
+      routes.push({
+        path: '*',
+        redirect : 'beta'
+      },
+      {
+        path: '/',
+        redirect : 'beta'
+      })
+    }
+  },
+
+
   /*
   ** Nuxt.js modules
   */

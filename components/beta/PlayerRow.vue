@@ -7,7 +7,7 @@
       <div class="nopadding col-1 border" v-if= "player[1].is_ready && !player[1].is_reborn && !player[1].is_dead && !player[1].is_winner">
           Ready
       </div>
-      <div class="nopadding col-1 border" v-else-if= "player[1].is_reborn && !player[1].is_dead">
+      <div class="nopadding col-1 border" v-else-if= "player[1].is_reborn && !player[1].is_dead && !player[1].is_winner">
           Reborn
       </div>
       <div class="nopadding col-1 border" v-else-if= "player[1].is_dead">

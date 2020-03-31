@@ -7,7 +7,7 @@
       <div class="nopadding col-1 border" v-if= "player[1].is_ready && !player[1].is_reborn && !player[1].is_dead && !player[1].is_winner">
           Ready 
       </div>
-      <div class="nopadding col-1 border" v-else-if= "player[1].is_reborn && !player[1].is_dead">
+      <div class="nopadding col-1 border" v-else-if= "player[1].is_reborn && !player[1].is_dead && !player[1].is_winner">
           Reborn
       </div>
       <div class="nopadding col-1 border" v-else-if= "player[1].is_dead">
@@ -26,7 +26,7 @@
       <div class="nopadding col-4 border" v-else-if = "!game.is_started">
         <card class = "card-class" v-bind:cardIndex = "53" v-for = "card, index in game.n_cards"/>       
       </div>
-      <div class="nopadding col-4 border" v-else-if= "game.n_cards === 1">
+      <div class="nopadding col-4 border" v-else-if= "game.n_cards === 1 && player[1].current_hand">
         <card class = "card-class" v-bind:cardIndex = "player[1].current_hand['card_0'].card"/>       
       </div>
       <div class="nopadding col-4 border" v-else>
