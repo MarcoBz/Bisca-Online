@@ -53,13 +53,11 @@
 </template>
 
 <script>
-import Logo from '~/components/Logo.vue'
-import CreateMatch from '~/components/CreateMatch.vue'
-import MatchRow from '~/components/MatchRow.vue'
-import MatchTableHead from '~/components/MatchTableHead.vue'
+import CreateMatch from '~/components/beta/CreateMatch.vue'
+import MatchRow from '~/components/beta/MatchRow.vue'
+import MatchTableHead from '~/components/beta/MatchTableHead.vue'
 export default {
   components: {
-    Logo,
     CreateMatch,
     MatchTableHead,
     MatchRow

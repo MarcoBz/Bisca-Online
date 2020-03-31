@@ -45,10 +45,10 @@
 </template>
 
 <script>
-import OthersPlayersRow from "~/components/OthersPlayersRow.vue"
-import PlayerTableHead from "~/components/PlayerTableHead.vue"
-import DetailsRow from "~/components/DetailsRow.vue"
-import DetailsTableHead from "~/components/DetailsTableHead.vue"
+import OthersPlayersRow from "~/components/test/OthersPlayersRow.vue"
+import PlayerTableHead from "~/components/test/PlayerTableHead.vue"
+import DetailsRow from "~/components/test/DetailsRow.vue"
+import DetailsTableHead from "~/components/test/DetailsTableHead.vue"
 
 export default {
     components: {

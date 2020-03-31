@@ -27,7 +27,7 @@
                 xmlns="http://www.w3.org/2000/svg"
                 xmlns:xlink="http://www.w3.org/1999/xlink"
                 >
-                <use v-bind= "{ 'xlink:href': require('../assets/svg-cards-indented.svg') + `#${cardsReference[card.card]}`}" x="0" y="0" transform="scale(0.4)"/>
+                <use v-bind= "{ 'xlink:href': require('../../assets/svg-cards-indented.svg') + `#${cardsReference[card.card]}`}" x="0" y="0" transform="scale(0.4)"/>
             </svg>  
           </button></span>
       </div>
@@ -39,7 +39,7 @@
                 xmlns="http://www.w3.org/2000/svg"
                 xmlns:xlink="http://www.w3.org/1999/xlink"
                 >
-                <use v-bind= "{ 'xlink:href': require('../assets/svg-cards-indented.svg') + `#${cardsReference[player[1].played_card]}`}" x="0" y="0" transform="scale(0.4)"/>
+                <use v-bind= "{ 'xlink:href': require('../../assets/svg-cards-indented.svg') + `#${cardsReference[player[1].played_card]}`}" x="0" y="0" transform="scale(0.4)"/>
             </svg>
           </button></span>
       </div>
