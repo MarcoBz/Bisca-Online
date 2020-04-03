@@ -1,8 +1,22 @@
 <template>
   <div class="container-fluid">
 
-    <div v-if = " match && game && turn">
-        <div v-if = "!authorized">
+    <div v-if = " match">
+
+        <div v-if= "match.is_ended">
+            <div class= "row text-center m-3" v-if = "!match.is_noWinner">
+                <div class="col-12">
+                   <h2> The winner is : {{players.find(c => parseInt(c[0].split('_')[1]) === this.match.winner_player_index)[1].player_name}} </h2>
+                </div>
+            </div>     
+            <div class= "row text-center m-3" v-else>
+                <div class="col-12">
+                   <h2>No winner</h2>
+                </div>
+            </div>          
+        </div>
+
+        <div v-else-if = "!authorized">
             <div class="row text-center">
                 <div class="col-12 text-center">
                     <h2>Enter your password</h2>
@@ -28,16 +42,12 @@
 
         </div>
         <div v-else>
-            <div class= "row text-center">
-                <div class = "col-12">
-                    <details-table-head />
+            <div class= "row text-center justify-content-center other-players">
+                <div class = "col-2" v-for = "player in players">
+                    <players-component v-bind:player = player v-bind:currentPlayer = "player[0] === currentPlayer[0]"/>
                 </div>
             </div>
-            <div class= "row text-center">
-                <div class = "col-12">
-                    <details-row v-bind:match = match v-bind:matchName = "inputMatch" />
-                </div>
-            </div>
+
 
             <div class= "row text-center">
                 <div class="col-12">
@@ -49,15 +59,9 @@
             </div>  
 
             <div class= "row text-center">
-            <div class = "col-12">
-                <player-table-head />
-            </div>
-            </div>
-            <div class= "row text-center" v-for = "player in players">
-                <div class = "col-12" v-if = "player[0] === currentPlayer[0]">
-                    <player-row v-bind:player = currentPlayer 
+                <div class = "col-12" >
+                    <player-hand v-bind:player = currentPlayer 
                                 v-bind:players = players
-                                v-bind:match = match
                                 v-bind:game = game
                                 v-bind:turn = turn
                                 v-bind:matchName = "inputMatch" 
@@ -65,23 +69,17 @@
                                 v-on:setCall="setCall"
                                 v-on:playedCard="playedCard"/>
                 </div>
-                <div class = "col-12" v-else>
-                    <others-players-row v-bind:player = player 
-                                v-bind:players = players
-                                v-bind:match = match
-                                v-bind:game = game
-                                v-bind:turn = turn
-                                v-bind:matchName = "inputMatch"/>
-                </div>
             </div>
         </div>
+
 
    </div>
   </div>
 </template>
 
 <script>
-import PlayerRow from "~/components/beta/PlayerRow.vue"
+import PlayersComponent from "~/components/beta2/PlayersComponent.vue"
+import PlayerHand from "~/components/beta2/PlayerHand.vue"
 import OthersPlayersRow from "~/components/beta/OthersPlayersRow.vue"
 import PlayerTableHead from "~/components/beta/PlayerTableHead.vue"
 import DetailsRow from "~/components/beta/DetailsRow.vue"
@@ -90,9 +88,8 @@ import DetailsTableHead from "~/components/beta/DetailsTableHead.vue"
 export default {
 
     components: {
-        PlayerRow,
-        OthersPlayersRow,
-        PlayerTableHead,
+        PlayersComponent,
+        PlayerHand,
         DetailsRow,
         DetailsTableHead
     },
@@ -146,12 +143,11 @@ export default {
 
         back(){
             this.$router.push({
-                path: `/beta/${inputMatch}`
+                path: `/beta2/${inputMatch}`
             })
         },
 
         async endTurn(turnRef) {
-            console.log('test set timeout')
             await turnRef.update({
                 is_ended: true
             })
@@ -327,3 +323,11 @@ export default {
     }  
 }
 </script>
+
+<style>
+
+.other-players{
+    margin-top:50 px;
+}
+
+</style>

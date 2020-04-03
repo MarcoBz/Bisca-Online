@@ -1,9 +1,35 @@
 <template>
+  <div class="container-fluid">
       <div class="row text-center">
         <div class="col">
-          <button class="btn btn-secondary" @click= "createMatch" >Create Match</button>
+          <button class="btn btn-secondary" @click= "createMatch" v-bind:disabled= "!nLives || !nPlayers" >Create Match</button>
         </div>
       </div>
+      <div class= "row text-center m-2">
+        <div class = "col-4">
+        </div>
+        <div class = "col-4 border">
+          <div class="form-group row">
+            <label for="inputNplayers" class="col-sm-6 col-form-label text-right">N. Players</label>
+            <div class="col-sm-6">
+              <input type="text" class="form-control" id="inputNplayers" placeholder="Players" v-model = "nPlayers">
+            </div>
+          </div>
+            <div class="form-group row">
+            <label for="inputNlives" class="col-sm-6 col-form-label text-right">N. Lives</label>
+            <div class="col-sm-6">
+              <input type="text" class="form-control" id="inputNlives" placeholder="Lives" v-model = "nLives">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputPassword">Password</label>
+            <input type="text" class="form-control" id="inputPassword" placeholder="Password">
+          </div>
+        </div>
+        <div class = "col-4">
+        </div>
+      </div>
+  </div>
 </template>
 
 <script>
@@ -13,9 +39,9 @@ export default {
 
     data () {
     return {
-      nLives: 4,
-      nCards: 5,
-      nPlayers: 3,
+      nLives: null,
+      nCards: 2,
+      nPlayers: null,
       totalMatches: null
     }
   },
@@ -43,10 +69,10 @@ export default {
               creation_date : (new Date()).toISOString(),
               is_started: false,
               is_ended: false,
-              n_players : this.nPlayers,
+              n_players : parseInt(this.nPlayers),
               joined_players: 0,
               ready_players: 0,
-              n_lives : this.nLives,
+              n_lives : parseInt(this.nLives),
               reborn_action: false,  
               current_game: 0,
               current_turn: 0,

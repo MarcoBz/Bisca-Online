@@ -77,18 +77,16 @@
           0
       </div>
     </div>
-    <div class= "row text-center nopadding row-eq-height" v-if="player[1].his_turn && turn.egg_notice && turn.player_with_egg_index === parseInt(player[0].split('_')[1])">
+    <div class= "row text-center nopadding row-eq-height" v-if="eggNotice">
       <div class="nopadding col-4 border" >
       </div>
       <div class="nopadding col-4 border" >
-        <span><button class = "btn"
-                      @click="eggChanged(true)" 
-                      v-bind:class = "isClicked ? 'btn-secondary' : 'btn-light'"
-                      v-bind:disabled = "isClicked">0</button></span>
-        <span><button class = "btn"
-                      @click="eggChanged(false)" 
-                      v-bind:class = "isClicked ? 'btn-secondary' : 'btn-light'"
-                      v-bind:disabled = "isClicked">13</button></span>
+        <span><button class = "btn btn-light"
+                      @click="playedCard(0)" 
+                      v-bind:disabled = "isClicked">Max</button></span>
+        <span><button class = "btn btn-light"
+                      @click="playedCard(100)" 
+                      v-bind:disabled = "isClicked">Min</button></span>
       </div>
       <div class="nopadding col-4 border" >
       </div>
@@ -107,6 +105,10 @@ export default {
   props: ['player', 'players', 'match', 'game', 'turn', 'matchName'],
     data () {
     return {
+      eggNotice: false,
+      eggIndex: null,
+
+
       isClicked: false,
     }
   },
@@ -114,61 +116,42 @@ export default {
 
   methods: {
 
-    async eggChanged(choose){
-
-      if(choose){
-          try {
-            const playerRef = this.$fireDb.ref(`players/${this.matchName}/${this.player[0]}`)
-            await playerRef.update({
-              his_turn: false,
-              played_card: 0
-            })
-            let payload = {
-              changed: true,
-              card: 0,
-              player: this.player[0]
-            }
-            this.$emit('eggChanged', payload)
-
-          } catch (e) {
-            console.log(e)
-            return
-          } 
-      }
-
-      else{
-        const playerRef = this.$fireDb.ref(`players/${this.matchName}/${this.player[0]}`)
-        await playerRef.update({
-          his_turn: false
-        })   
-        let payload = {
-          changed: false
-        }
-        this.$emit('eggChanged', payload)     
-      }
-
-    },
-
     async playedCard(card, index){
-          try {
-            let cardIndex = parseInt(index.split('_')[1])
-            const playerRef = this.$fireDb.ref(`players/${this.matchName}/${this.player[0]}`)
-            await playerRef.child(`current_hand/card_${cardIndex}`).update({is_played: true})
-            await playerRef.update({
-              his_turn: false,
-              played_card: card
-            })
-            let payload = {
-              card: card,
-              cardIndex: cardIndex,
-              player: this.player[0]
-            }
-            this.$emit('playedCard', payload)
 
-          } catch (e) {
-            console.log(e)
-            return
-          } 
+          if (card === 13){
+            this.eggNotice = true 
+            this.eggIndex = index 
+          }
+          else{
+
+            if (card === 0 || card === 100){
+              this.eggNotice = false
+              index = this.eggIndex
+              this.eggIndex = null
+            }
+
+            try {
+              let cardIndex = parseInt(index.split('_')[1])
+              const playerRef = this.$fireDb.ref(`players/${this.matchName}/${this.player[0]}`)
+              await playerRef.child(`current_hand/card_${cardIndex}`).update({is_played: true})
+              await playerRef.update({
+                his_turn: false,
+                played_card: card
+              })
+              let payload = {
+                card: card,
+                cardIndex: cardIndex,
+                player: this.player[0]
+              }
+              this.$emit('playedCard', payload)
+
+            } catch (e) {
+              console.log(e)
+              return
+            } 
+          }
+
+
 
     },
 
