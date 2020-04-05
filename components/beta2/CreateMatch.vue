@@ -40,7 +40,7 @@ export default {
     data () {
     return {
       nLives: null,
-      nCards: 2,
+      nCards: 5,
       nPlayers: null,
       totalMatches: null
     }
@@ -81,7 +81,6 @@ export default {
               lives_updated: false,
               winner_player_index: null,
               is_noWinner: false,   
-              still_alive_players: this.nPlayers,
               all_ready: false    
           }
 
@@ -94,7 +93,6 @@ export default {
               is_started: false,
               is_ended: false,
               n_cards: this.nCards,
-              dealer_index: 0,
               current_turn: 0,
               total_calls: 0          
           }
@@ -106,8 +104,7 @@ export default {
           turnObj["match_" + newMatchID]["game_0"] = {}
           turnObj["match_" + newMatchID]["game_0"]["turn_0"] = {
               is_started: false,
-              is_ended: false,
-              first_player_index: 0
+              is_ended: false
           }
           await turnsRef.update(turnObj)    
 

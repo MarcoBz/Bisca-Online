@@ -1,30 +1,33 @@
 <template>
   <div class="container component nopadding border border-2" >
     <div class= "row row-data text-center nopadding border " >
-        <div class="col-12 nopadding">{{player[1].player_name}}</div>
+        <div class="col-12 nopadding" v-bind:class = "{'backGroundClassCurrent': currentPlayer}"><h6>{{player[1].player_name}}</h6></div>
     </div>
-    <div class= "row row-data nopadding border " >
-        <div class="col-5 text-right nopadding">Lives:</div>
-        <div class="col-2 text-center nopadding">{{player[1].n_lives}}</div>
-        <div class="col-5 nopadding"></div>
+    <div class= "row row-data justify-content-center nopadding border" >
+        <div class="col-6 text-right nopadding"><h6>Lives:</h6></div>
+        <div class="col-6 text-center nopadding"><h6>{{player[1].n_lives}}</h6></div>
     </div>
-    <div class= "row row-data nopadding border " >
-        <div class="col-4 text-right nopadding">Call:</div>
-        <div class="col-2 text-center nopadding" v-if = "(!player[1].current_call && player[1].current_call != 0) || !player[1].current_hand">-</div>
-        <div class="col-2 text-center nopadding" v-else-if = "(player[1].current_call || player[1].current_call === 0) && player[1].current_hand['card_1']">{{player[1].current_call}}</div>
-        <div class="col-2 text-center nopadding" v-else-if = "player[1].current_call === 1">Win</div>
-        <div class="col-2 text-center nopadding" v-else-if = "player[1].current_call === 0">Lose</div>
-
-        <div class="col-4 text-right nopadding">Points:</div>
-        <div class="col-2 text-center nopadding" v-if = "player[1].current_total">{{player[1].current_total}}</div> 
-        <div class="col-2 text-center nopadding" v-else>0</div>
+    <div class= "row row-data justify-content-center nopadding border " >
+        <div class="col-6 text-right nopadding">Call:</div>
+        <div class="col-6 text-center nopadding" v-if = "!player[1].called_current_game">-</div>
+        <div class="col-6 text-center nopadding" v-else-if = "player[1].called_current_game && game.n_cards != 1">{{player[1].current_call}}</div>
+        <div class="col-6 text-center nopadding" v-else-if = "player[1].current_call === 1 && game.n_cards === 1">Win</div>
+        <div class="col-6 text-center nopadding" v-else-if = "player[1].current_call === 0 && game.n_cards === 1">Lose</div>
+    </div>
+    <div class= "row row-data justify-content-center nopadding border " >
+        <div class="col-6 text-right nopadding">Points:</div>
+        <div class="col-6 text-center nopadding" v-if = "player[1].current_total">{{player[1].current_total}}</div> 
+        <div class="col-6 text-center nopadding" v-else>0</div>
     </div>
     <div class= "row row-card text-center nopadding" >
         <div class="col-12 text-center nopadding" v-bind:class = "{'bg-success': player[1].his_turn}" v-if = "!player[1].is_dead">
             <card class = "card-class" v-bind:cardIndex = "53"  v-if = "!player[1].current_hand" />     
             <card class = "card-class" v-bind:cardIndex = "player[1].played_card"  v-else-if = "player[1].played_card || player[1].played_card === 0"/>  
-            <card class = "card-class" v-bind:cardIndex = "player[1].current_hand['card_0'].card"  v-else-if = "!currentPlayer && !player[1].current_hand['card_1']"/> 
+            <card class = "card-class" v-bind:cardIndex = "player[1].current_hand['card_0'].card"  v-else-if = "!currentPlayer && game.n_cards === 1"/> 
             <card class = "card-class" v-bind:cardIndex = "53"  v-else />     
+        </div>
+        <div class="col-12 text-center nopadding" v-else>
+            <nuke class = "card-class" />     
         </div>
         
     </div>
@@ -51,12 +54,14 @@
 
 <script>
 import Card from "~/components/beta2/Card.vue"
+import Nuke from "~/components/beta2/Nuke.vue"
 export default {
   components: {
+    Nuke,
     Card
   },
   name: "PlayersComponent",
-  props: ['player', 'currentPlayer'],
+  props: ['player', 'currentPlayer', 'game'],
     data () {
     return {
 
@@ -75,17 +80,17 @@ export default {
 
     .component{
 
-        height: 250px;
+        height: 275px;
 
     }
 
     .row-data{
-        height:10%;
+        height:25px;
         overflow: hidden;
     }
 
     .row-card{
-        height:60%;
+        height:150px;
         overflow: hidden;
     }
 
@@ -96,6 +101,11 @@ export default {
   svg {
     display: block;
     margin: 0 auto;
+  }
+
+  .backGroundClassCurrent{
+    background-color: gold
+
   }
 
   .backgroundClass{

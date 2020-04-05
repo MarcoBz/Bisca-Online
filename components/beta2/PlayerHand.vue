@@ -9,7 +9,7 @@
     <div class= "row row-card text-center justify-content-center nopadding border backgroundClassHand" v-if = "player[1].current_hand">
       <div class="nopadding col-2" v-for = "card, index in player[1].current_hand">
         <div v-if = "game.n_cards === 1">
-          <button class = "card-class" @click = "playedCard(card.card, index)" v-bind:disabled = "!player[1].his_turn || !turn.is_started" >
+          <button class = "card-class" @click = "playedCard(card.card, index)" v-bind:disabled = "!player[1].his_turn || !turn.is_started" v-if = "!card.is_played" >
               <card v-bind:cardIndex = "53" />
           </button> 
         </div>        
@@ -20,18 +20,17 @@
         </div>
       </div>
     </div>
-
     <div class= "row row-card text-center justify-content-center nopadding border backgroundClassHand" v-else-if = "!player[1].current_hand && player[1].is_ready">
       <div class="nopadding col-12">
       </div>
     </div>
-
     <div class= "row text-center justify-content-center nopadding border backgroundClass" v-else>
       <div class="nopadding col-12">
         <button class="btn btn-warning" @click = "playerIsReady"> Ready </button>
       </div>
     </div>
-    <div v-if = "game.is_started && !player[1].is_dead">
+
+    <div v-if = "game.is_started && !player[1].is_dead && player[1].admitted_calls">
       <div class= "row text-center justify-content-center nopadding border" v-if = "game.n_cards === 1">
         <div class="nopadding col-12">
             <button class = "btn"
@@ -58,6 +57,7 @@
         </div>
       </div>
     </div>
+
     <div class= "row text-center nopadding" v-if="eggNotice">
       <div class="nopadding col-4 border" >
       </div>
@@ -98,7 +98,6 @@ export default {
   methods: {
 
     async playedCard(card, index){
-            console.log('test')
 
           if (card === 13){
             this.eggNotice = true 

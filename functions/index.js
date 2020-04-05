@@ -46,23 +46,16 @@ exports.updateLives = functions.database.ref('/games/{match}/{game}/is_ended')
         let rebornAction = await matchRef.child('reborn_action').once('value',(snapshot) => {
             snapshot
         })
-        let allPlayers = []
-        let stillAlivePlayers = await matchRef.child(`still_alive_players`).once('value',(snapshot) => {
-            snapshot
-        })
-        stillAlivePlayers = stillAlivePlayers.val()
-        let allPlayersDead = []
+        let allPlayersAftermath = []
 
         for(let i = 0; i < nPlayers.val(); i++){
             let playerIsDead = await playersRef.child(`player_${i}/is_dead`).once('value',(snapshot) => {
                 snapshot
             })  
 
-            allPlayersDead.push({
-
+            allPlayersAftermath.push({
                 playerIndex: i,
                 is_dead: playerIsDead.val()
-
             })
             
 
@@ -75,50 +68,37 @@ exports.updateLives = functions.database.ref('/games/{match}/{game}/is_ended')
                 let isReborn = await playersRef.child(`player_${i}/is_reborn`).once('value',(snapshot) => {
                     snapshot
                 })
-
                 isReborn=isReborn.val()
                 if (newLives <= 0) {
                     newLives = 0
                     isDead = true
-                    stillAlivePlayers -= 1 
                 }
-
                 if(newLives === 0 && !rebornAction.val()){
                     newLives = 1
                     isDead = false
                     isReborn = true
                     rebornActionDone = true
-                    stillAlivePlayers += 1
                 }
-
                 await playersRef.child(`player_${i}`).update({
                     is_dead : isDead,
                     is_reborn : isReborn,
                     n_lives: newLives
                 }) 
-
-                if (isDead){
-
-                    await playersRef.child(`player_${i}`).update({
-                        admitted_calls: null,
-                        called_current_game: null,
-                        current_call: null,
-                        current_total: null,
-                        current_hand: null,
-                        his_turn: false,
-                        next_index: null,
-                        played_card: null
-                    }) 
-                }
-
-                allPlayers.push({
-                    player: `player_${i}`,
-                    lives: newLives
-                })
-
-                allPlayersDead.find(c => c.playerIndex === i).is_dead = isDead
+                
+                await playersRef.child(`player_${i}`).update({
+                    admitted_calls: null,
+                    called_current_game: null,
+                    current_call: null,
+                    current_total: null,
+                    current_hand: null,
+                    his_turn: false,
+                    next_index: null,
+                    played_card: null
+                }) 
+                
+                allPlayersAftermath.find(c => c.playerIndex === i).is_dead = isDead
+                allPlayersAftermath.find(c => c.playerIndex === i).lives = newLives
             }
-
         }
 
         if (rebornActionDone){
@@ -128,34 +108,26 @@ exports.updateLives = functions.database.ref('/games/{match}/{game}/is_ended')
         }
 
         await matchRef.update({
-            still_alive_players: stillAlivePlayers,
             lives_updated : true,
         }) 
 
-        let stillInGame = allPlayers.filter(player => {
+        let stillInGame = allPlayersAftermath.filter(player => {
             return player.lives > 0
         })
 
         if (stillInGame.length === 1){
             await matchRef.update({
-                winner_player_index: parseInt(stillInGame[0].player.split('_')[1]),
+                winner_player_index: parseInt(stillInGame[0].playerIndex),
                 is_ended: true,
-                current_player_index: stillInGame[0].player.split('_')[1],
+                current_player_index: stillInGame[0].playerIndex,
                 end_date: (new Date()).toISOString(),
                 current_game: null,
                 current_total_calls: null,
                 current_turn: null,
+                current_numbers_calls: null
             }) 
-            await playersRef.child(`player_${stillInGame[0].player.split('_')[1]}`).update({
+            await playersRef.child(`player_${stillInGame[0].playerIndex}`).update({
                 is_winner: true,
-                admitted_calls: null,
-                called_current_game: null,
-                current_call: null,
-                current_total: null,
-                current_hand: null,
-                his_turn: false,
-                next_index: null,
-                played_card: null
             })
         }
         else if (stillInGame.length === 0){
@@ -167,39 +139,23 @@ exports.updateLives = functions.database.ref('/games/{match}/{game}/is_ended')
                 current_player_index: null,
                 current_total_calls: null,
                 current_turn: null,
+                current_numbers_calls: null
             }) 
         }
+
         else {
 
-            allPlayersDead.forEach(async player => {
+            allPlayersAftermath.forEach(async player => {
                 if(!player.is_dead) {
-                    let next = await playersRef.child(`player_${player.playerIndex}/next_index`).once('value',(snapshot) => {
-                        snapshot
-                    }) 
-                    next = next.val() 
-                    let updatedNext = null
-    
-                    while(updatedNext === null){
-                        if(allPlayersDead.find(c => c.playerIndex === next).is_dead) {
-    
-                            if (next == nPlayers.val()) next = 0
-                            else next += 1 
-                            if(allPlayersDead.find(c => c.playerIndex === next)){
-                                if (!allPlayersDead.find(c => c.playerIndex === next).is_dead){
-                                    updatedNext = next
-                                }
-                            }
-
-    
-                        }
-                        else updatedNext = next
+        
+                    let next = player.playerIndex + 1 === nPlayers.val() ? 0 : player.playerIndex + 1
+                    let definedNext = false
+                    while(definedNext === false){
+                        if (allPlayersAftermath.find(c => c.playerIndex === next).is_dead) next = next + 1 === nPlayers.val() ? 0 : next + 1
+                        else definedNext = true
                     }
-    
-                    await playersRef.child(`player_${player.playerIndex}`).update({
-                        next_index: updatedNext
-                    }) 
+                    player.nextIndex = next
                 }
-    
             })
 
             players = await playersRef.once('value',(snapshot) => {
@@ -216,18 +172,21 @@ exports.updateLives = functions.database.ref('/games/{match}/{game}/is_ended')
             let newCards = nCards.val() - 1 == 0 ? 5 : nCards.val() - 1
             
             let nextGame = "game_" + (parseInt(game.split('_')[1]) + 1).toString()
-            let currentDealer = await gameRef.child('dealer_index').once('value',(snapshot) => {
+            let oldDealer = await gameRef.child('dealer_index').once('value',(snapshot) => {
                 snapshot
             })
-            
             let nextDealer = null
-            let tempIndex = currentDealer.val() + 1 === nPlayers.val() ? 0 : currentDealer.val() + 1
-            while(nextDealer === null){
-            
-                if (players.find(c => c[0] === `player_${tempIndex}`)[1].is_dead) tempIndex = tempIndex + 1 === nPlayers.val() ? 0 : tempIndex + 1
-                else nextDealer = tempIndex
-            
+            console.log(allPlayersAftermath)
+            if (allPlayersAftermath.find(c => c.playerIndex === oldDealer.val()).is_dead) {
+                let nextIndex = oldDealer.val() + 1 === nPlayers.val() ? 0 : oldDealer.val() + 1
+                console.log('1', nextIndex, oldDealer.val(), nPlayers.val())
+                while (nextDealer === null){
+                    if (allPlayersAftermath.find(c => c.playerIndex === nextIndex).is_dead) nextIndex = nextIndex + 1 === nPlayers.val() ? 0 : nextIndex + 1
+                    else nextDealer = nextIndex
+                }
+                console.log('2', nextIndex, oldDealer.val(), nPlayers.val())
             }
+            else nextDealer = allPlayersAftermath.find(c => c.playerIndex === oldDealer.val()).nextIndex
             
             gameObj[nextGame] = {
                 is_started: false,
@@ -257,20 +216,22 @@ exports.updateLives = functions.database.ref('/games/{match}/{game}/is_ended')
                 current_game: parseInt(game.split('_')[1]) + 1,
                 current_player_index: nextDealer
             }) 
-            let admittedCallsObj= {}
-            for (let i = 0; i <= newCards; i++){
-                admittedCallsObj[parseInt(i)] = false
-            }
+            // let admittedCallsObj= {}
+            // for (let i = 0; i <= newCards; i++){
+            //     admittedCallsObj[parseInt(i)] = false
+            // }
+
             for(let i = 0; i < nPlayers.val(); i++){
             
                 await playersRef.child(`player_${i}`).update({
                     current_total: null,
-                    called_current_game: false,
+                    called_current_game: null,
                     current_call: null,
                     current_hand: null,
                     his_turn: false,
                     played_card: null,
-                    admitted_calls: null,
+                    next_index: allPlayersAftermath.find(c => c.playerIndex === i).is_dead ? null : allPlayersAftermath.find(c => c.playerIndex === i).nextIndex,
+                    // admitted_calls: admittedCallsObj
                     admitted_calls: null
                 }) 
 
@@ -380,6 +341,7 @@ exports.shuffleDealer = functions.database.ref('/matches/{match}/all_ready')
     let match = context.params.match
     const matchRef = admin.database().ref(`matches/${match}`)
     const gameRef = admin.database().ref(`games/${match}/game_0`)
+    const turnRef = admin.database().ref(`turns/${match}/game_0/turn_0`)
     let allReady = await matchRef.child('all_ready').once('value',(snapshot) => {
         snapshot
     })
@@ -393,6 +355,9 @@ exports.shuffleDealer = functions.database.ref('/matches/{match}/all_ready')
         })
         await gameRef.update({
             dealer_index: dealer_index
+        })
+        await turnRef.update({
+            first_player_index: dealer_index
         })
         let playerRef = admin.database().ref(`players/${match}/player_${dealer_index}`)
         await  playerRef.update({
@@ -469,13 +434,22 @@ exports.shuffleCards = functions.database.ref('/games/{match}/{game}/is_started'
                         }
 
                         await playerRef.update({
-                            his_turn: true,
                             admitted_calls: admittedCallsObj
                         })                     
+                    }
+                    else {
+                        let admittedCallsObj= {}
+                        for (let i = 0; i <= nCards.val(); i++){
+                            admittedCallsObj[parseInt(i)] = false
+                        }
+                        await playerRef.update({
+                            admitted_calls: admittedCallsObj
+                        }) 
                     }
                     await playerRef.update({
                         current_hand: handsObj["player_" + i]
                     })
+
                 }
             }
 

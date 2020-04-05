@@ -44,7 +44,7 @@
         <div v-else>
             <div class= "row text-center justify-content-center other-players">
                 <div class = "col-2" v-for = "player in players">
-                    <players-component v-bind:player = player v-bind:currentPlayer = "player[0] === currentPlayer[0]"/>
+                    <players-component v-bind:player = player v-bind:game = game v-bind:currentPlayer = "player[0] === currentPlayer[0]"/>
                 </div>
             </div>
 

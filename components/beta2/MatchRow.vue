@@ -34,7 +34,7 @@
         </div>
       </div>
       <div class="nopadding col-1 border" >
-          <button class = "btn btn-primary" @click= "join" v-bind:disabled = "!playerName || !playerPsw || match.joined_players === match.n_players">Join</button>
+          <button class = "btn btn-primary" @click= "join" v-bind:disabled = "!playerName || !playerPsw || match[1].joined_players === match[1].n_players">Join</button>
       </div>
       <div class="nopadding col-1 border" >
           <button class = "btn btn-primary" @click= "goToMatch">Go To</button>
