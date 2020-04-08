@@ -55,7 +55,7 @@ export default {
       },
       {
         path: '/',
-        redirect : 'beta'
+        redirect : 'beta3'
       })
     }
   },

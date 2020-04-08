@@ -1,0 +1,7 @@
+- Check per reborn tutti
+- 40 / 52 carte
+- history 
+- password partita
+- sistemare quando vedere il match nella pagina iniziale
+- login
+- grafica
