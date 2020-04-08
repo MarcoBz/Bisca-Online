@@ -28,6 +28,9 @@
               </div>              
             </div>
         </div>
+        <div class="col-12 text-center nopadding" v-else-if = "player[1].is_dead">
+            <nuke class = "card-class" />     
+        </div>
 
 
         <div class="col-12 text-center nopadding" v-else-if = "(!game || !game.is_started) && explosions && aftermath">
@@ -54,9 +57,6 @@
             <card class = "card-class" v-bind:cardIndex = "player[1].played_card"  v-else-if = "player[1].played_card || player[1].played_card === 0"/>  
             <card class = "card-class" v-bind:cardIndex = "player[1].current_hand['card_0'].card"  v-else-if = "!currentPlayer && game.n_cards === 1"/> 
             <card class = "card-class" v-bind:cardIndex = "53"  v-else />     
-        </div>
-        <div class="col-12 text-center nopadding" v-else>
-            <nuke class = "card-class" />     
         </div>
         
     </div>
