@@ -152,8 +152,6 @@ exports.updateLives = functions.database.ref('/games/{match}/{game}/is_ended')
         }
 
         else {
-
-            console.log(allPlayersAftermath)
             let playersLives = {}
             allPlayersAftermath.forEach(player => {
 
@@ -173,7 +171,6 @@ exports.updateLives = functions.database.ref('/games/{match}/{game}/is_ended')
                     }
                 }
             })
-            console.log(playersLives)
             await gameRef.child(`final_lives`).update(playersLives) 
 
             allPlayersAftermath.forEach(async player => {
@@ -207,15 +204,12 @@ exports.updateLives = functions.database.ref('/games/{match}/{game}/is_ended')
                 snapshot
             })
             let nextDealer = null
-            console.log(allPlayersAftermath)
             if (allPlayersAftermath.find(c => c.playerIndex === oldDealer.val()).is_dead) {
                 let nextIndex = oldDealer.val() + 1 === nPlayers.val() ? 0 : oldDealer.val() + 1
-                console.log('1', nextIndex, oldDealer.val(), nPlayers.val())
                 while (nextDealer === null){
                     if (allPlayersAftermath.find(c => c.playerIndex === nextIndex).is_dead) nextIndex = nextIndex + 1 === nPlayers.val() ? 0 : nextIndex + 1
                     else nextDealer = nextIndex
                 }
-                console.log('2', nextIndex, oldDealer.val(), nPlayers.val())
             }
             else nextDealer = allPlayersAftermath.find(c => c.playerIndex === oldDealer.val()).nextIndex
             

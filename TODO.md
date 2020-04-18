@@ -5,3 +5,6 @@
 - sistemare quando vedere il match nella pagina iniziale
 - login
 - grafica
+- in 5 saltare un turno
+- controllare perche table scende in alcuni casi
+- randomize players

@@ -51,7 +51,7 @@ export default {
     extendRoutes (routes, resolve) {
       routes.push({
         path: '*',
-        redirect : 'beta'
+        redirect : 'beta3'
       },
       {
         path: '/',

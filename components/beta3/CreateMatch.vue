@@ -40,7 +40,7 @@ export default {
     data () {
     return {
       nLives: null,
-      nCards: 1,
+      nCards: 5,
       nPlayers: null,
       totalMatches: null
     }
