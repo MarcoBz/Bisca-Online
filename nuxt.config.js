@@ -31,6 +31,7 @@ export default {
   ** Global CSS
   */
   css: [
+    '@/assets/styles/_carbon.scss'
   ],
 
   /*

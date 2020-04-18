@@ -12,11 +12,11 @@
             </div>
             <div class="col-md-1"></div>
           </div>
-        <div class="row justify-content-center">
+        <!-- <div class="row justify-content-center">
           <div class= "col-12">
             <footer-component/>
           </div>
-        </div>        
+        </div>         -->
   </div>
 </template>
 <script>

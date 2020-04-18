@@ -1,58 +1,54 @@
 <template>
   <div>
-    <header>
-      <nav class="navbar-expand-lg  fixed-top ">
-        <div class="container-fluid">
-          <div class= "row">
-            <div class="col-md-3 col-1"></div>
-            <div class="col-md-6 col-10 navbar-dark bg-dark">
-              <div class= "row">
-                <div class= "col-6">
-                  <div class="row">
-                    <div class="col nopadding text-left">
-                      <div class="navbar-brand"><h5><u>Bisca Online</u></h5></div>
-                    </div>                  
-                  </div>
-                </div>
-               </div> 
-            </div>
-            <div class="col-md-3 col-1"></div>
-          </div>
-        </div>
-      </nav>
-    </header>
+    <cv-header aria-label="Carbon header">
+      <cv-header-name href="javascript:void(0)" @click ="backHome">
+        Bisca Online
+      </cv-header-name>
+      <template slot="header-global">
+        <cv-header-global-action aria-label="User avatar" aria-controls="user-panel">
+          <UserAvatar32 />
+        </cv-header-global-action>
+        <cv-header-global-action
+          aria-label="App switcher"
+          aria-controls="switcher-panel">
+          <ReportData32 />
+        </cv-header-global-action>
+      </template>
+    </cv-header>
   </div>
 </template>
 
 <script>
+import { CvHeader,CvHeaderName, CvHeaderGlobalAction} from '@carbon/vue';
+import ReportData32 from "@carbon/icons-vue/es/report--data/32";
+import UserAvatar32 from "@carbon/icons-vue/es/user--avatar/32";
 export default {
+  components: {
+    CvHeader,
+    UserAvatar32, 
+    ReportData32,
+    CvHeaderName,
+    CvHeaderGlobalAction
+  },
   data () {
     return {
     }
   },
+
+  methods:{
+
+    backHome(){
+      this.$router.push({
+          path: `/`
+      })
+    }
+
+  }
+
 }
 </script>
 
-<style>
+<style lang="scss">
 
-    .nuxt-link-class {
-      box-sizing: border-box;
-      margin: 0 5px;
-      color: lightgray;
-      text-decoration: none;
-    }
 
-    nav.navbar {
-      width: inherit;
-          top: 0%;
-      left: 50%;
-      transform: translateX(-50%);
-      
-    }
-  .row-eq-height {
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: -ms-flexbox;
-    display:         flex;
-  }
 </style>
