@@ -182,7 +182,9 @@ export default {
     methods:{
 
         goToRoom(){
-            console.log(this.chosenRoomName)
+            this.$router.push({
+                path: `rooms/${this.chosenRoomName}`
+            })
         },
 
         async submitName(){

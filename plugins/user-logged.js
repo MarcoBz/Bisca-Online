@@ -17,3 +17,6 @@ export default ({ app, route, error, store, redirect }) => {
         }
     })
  }
+
+
+ ////path solo rooms mandare da user
