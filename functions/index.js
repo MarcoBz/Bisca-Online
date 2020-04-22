@@ -3,6 +3,36 @@ const admin = require('firebase-admin');
 const utils = require("./utils.js")
 admin.initializeApp();
 
+exports.createUser = functions.auth.user().onCreate(async (user) => {
+
+        
+        const ref = admin.database().ref()
+        let totalUsers = await ref.child('total_users').once('value',(snapshot) => {
+            snapshot
+        })
+        totalUsers = totalUsers.val()
+        let newUserID = totalUsers + 1
+        await admin.database().ref().update({
+          total_users: newUserID
+        })
+        const usersRef = admin.database().ref('users')
+        let obj = {}
+        obj[user.uid] = {
+            email: user.email,
+            user_name: null,
+            registration_date : (new Date()).toISOString(),
+            rooms: null,
+            record: {
+                w: 0,
+                t: 0
+          }
+        }
+
+        console.log(obj)
+        await usersRef.update(obj)
+});
+
+
 exports.updateLives = functions.database.ref('/games/{match}/{game}/is_ended')
 .onUpdate(async (change, context) => { 
     let match = context.params.match

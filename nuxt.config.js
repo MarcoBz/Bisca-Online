@@ -38,6 +38,8 @@ export default {
   ** Plugins to load before mounting the App
   */
   plugins: [
+    '~/plugins/fireauth.js',
+    {src: '~/plugins/user-logged.js', mode: 'client' }
   ],
   /*
   ** Nuxt.js dev-modules
@@ -52,11 +54,11 @@ export default {
     extendRoutes (routes, resolve) {
       routes.push({
         path: '*',
-        redirect : 'beta3'
+        redirect : 'user'
       },
       {
         path: '/',
-        redirect : 'beta3'
+        redirect : 'user'
       })
     }
   },
@@ -84,6 +86,14 @@ export default {
         services: {
           realtimeDb: true,
           functions: true,
+          // auth: {
+          //   initialize: {
+          //     // onAuthStateChangedAction: 'onAuthStateChanged'
+          //     onAuthStateChangedMutation: 'SET_AUTH_USER',
+          //     persistence: 'local',
+          //     ssr: false
+          //   }
+          // },
         }
       }
     ]
