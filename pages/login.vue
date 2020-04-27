@@ -65,7 +65,6 @@ export default {
   watch: {
     authUser(newAuthUser) {
       if (newAuthUser){
-          console.log('diocan')
           this.$router.push({
               name: "user"
           })        

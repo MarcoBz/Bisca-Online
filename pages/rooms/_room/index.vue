@@ -35,9 +35,10 @@
                         v-if = "room">
                     <template slot="data">
                         <cv-data-table-row v-for= "match in matchesTable.filteredData">
-                            <cv-button @click= "joinMatch(match[1])" v-if = "!room.matches[match[1]].users[authUser.uid] && !matchesTable.data.find(c=>c.match === match[1]).is_started" type="button" style="width: 100%;">Join</cv-button>
-                            <cv-button @click= "goToMatch(match[1])" v-else-if = "!room.users[authUser.uid] && matchesTable.data.find(c=>c.match === match[1]).is_started" type="button" style="width: 100%;" >Go as Guest</cv-button>
-                            <cv-button @click= "goToMatch(match[1])" v-else-if = "room.users[authUser.uid]" type="button" style="width: 100%;">Go</cv-button>
+                            <cv-button @click= "joinMatch(match[1])" v-if = "!room.matches[match[1]].users" type="button" style="width: 100%;">Join</cv-button>
+                            <cv-button @click= "joinMatch(match[1])" v-else-if = "!room.matches[match[1]].users[authUser.uid] && matchesTable.data.find(c=>c.match === match[1]).joined_players < matchesTable.data.find(c=>c.match === match[1]).n_players" type="button" style="width: 100%;">Join</cv-button>
+                            <cv-button @click= "goToMatch(match[1])" v-else-if = "!room.matches[match[1]].users[authUser.uid] && matchesTable.data.find(c=>c.match === match[1]).joined_players >= matchesTable.data.find(c=>c.match === match[1]).n_players" type="button" style="width: 100%;" >Go as Guest</cv-button>
+                            <cv-button @click= "goToMatch(match[1])" v-else-if = "room.matches[match[1]].users[authUser.uid]" type="button" style="width: 100%;">Go</cv-button>
                             <cv-data-table-cell>{{match[1]}}</cv-data-table-cell>
                             <cv-data-table-cell>{{match[2]}}</cv-data-table-cell>
                             <cv-data-table-cell>{{match[3]}}</cv-data-table-cell>
@@ -160,9 +161,6 @@ export default {
     },
 
     mounted(){
-
-
-
             this.$fireDb.ref(`users/${this.authUser.uid}`).on('value', (snapshot) => {
                 this.user = snapshot.val()
                 if(this.user){
@@ -208,7 +206,9 @@ export default {
                             this.matchesTable.data.push({
                                 match: i,
                                 is_started: match.is_started,
-                                is_ended: match.is_ended
+                                is_ended: match.is_ended,
+                                n_players: match.n_players,
+                                joined_players: match.joined_players
                             })
                         })                     
                     }
@@ -217,7 +217,6 @@ export default {
     },
 
     methods:{
-
         async joinMatch(match) {
             try {
                 const playersRef = this.$fireDb.ref(`players/${match}`)
@@ -236,9 +235,7 @@ export default {
                     snapshot
                 })
                 matchJoined = matchJoined.val()
-                console.log(matchJoined)
                 if (!playerExists && matchJoined.joined_players < matchJoined.n_players){
-                
                     let newPlayerID = matchJoined.joined_players
                     await matchRef.update({
                         'joined_players': matchJoined.joined_players + 1
@@ -271,20 +268,28 @@ export default {
                     }
                     await playersRef.update(playerObj)
                     
-                    const roomRef = this.$fireDb.ref(`rooms/${this.$router.paramas.room}`)
-                    let obj = {}////sistemare
+                    const roomRef = this.$fireDb.ref(`rooms/${this.$route.params.room}`)
+                    let roomSnapshot = await roomRef.once('value',(snapshot) => {
+                        snapshot
+                    })
+                    roomSnapshot = roomSnapshot.val()
+                    let obj = {}
                     obj[`${this.authUser.uid}`] = true
                     await roomRef.child(`matches/${match}/users`).update(obj)                    
                     await roomRef.child(`users/${this.authUser.uid}`).update({
-                        t: roomRef.users[this.authUser.uid].t + 1
+                        t: roomSnapshot.users[this.authUser.uid].t + 1
                     })  
 
                     const userRef = this.$fireDb.ref(`users/${this.authUser.uid}`)
-                    await userRef.child(`rooms/${this.$router.paramas.room}`).update({
-                        t: userRef.rooms[this.$router.paramas.room].t + 1
+                    let userSnapshot = await userRef.once('value',(snapshot) => {
+                        snapshot
+                    })
+                    userSnapshot = userSnapshot.val()
+                    await userRef.child(`rooms/${this.$route.params.room}`).update({
+                        t: userSnapshot.rooms[this.$route.params.room].t + 1
                     })                    
                     await userRef.child(`record`).update({
-                        t: record.t + 1
+                        t: userSnapshot.record.t + 1
                     }) 
 
                 }
@@ -395,6 +400,12 @@ export default {
                 console.log(e)
                 return
             }
+        },
+
+        goToMatch(match){
+            this.$router.push({
+                path: `/${match}`
+            })            
         }
 
     }

@@ -227,7 +227,6 @@ export default {
                     w: 0,
                     t: 0
                 }
-                
                 let userObjRef = {}
                 userObjRef[this.inputRoom] = {
                     w: 0,
