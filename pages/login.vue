@@ -33,7 +33,17 @@
             </div> 
             <div class = "col-4"></div>                    
         </div>
-
+        <div class = "row">
+            <div class = "col-4"></div>   
+            <div class = "col-4">
+              <div class = "row text-left mt-1">
+                  <div class = "col-12">
+                    <cv-button @click= "loginWithGoogle" size="field">Login with Google</cv-button>
+                  </div>   
+              </div>           
+            </div> 
+            <div class = "col-4"></div>                    
+        </div>
     </div>
 
 
@@ -79,6 +89,17 @@ export default {
         email: this.email,
         password: this.password
       })
+      .then((data) => {
+        this.email = null
+        this.password = null
+      })
+      .catch((e) => {
+        console.log(e.message);
+      })
+    },
+
+    loginWithGoogle(){
+      this.$store.dispatch('signInWithGoogle')
       .then((data) => {
         this.email = null
         this.password = null

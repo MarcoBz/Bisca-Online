@@ -167,6 +167,35 @@ exports.updateLives = functions.database.ref('/games/{match}/{game}/is_ended')
             await playersRef.child(`player_${stillInGame[0].playerIndex}`).update({
                 is_winner: true,
             })
+            let uid = await playersRef.child(`player_${stillInGame[0].playerIndex}/player_uid`).once('value',(snapshot) => {
+                snapshot
+            })
+            let userUid = uid.val()
+            const roomRef = admin.database().ref(`rooms/${matchRef.room}`)
+            let roomSnapshot = await roomRef.once('value',(snapshot) => {
+                snapshot
+            })
+            roomSnapshot = roomSnapshot.val()
+            let obj = {}
+            obj[`${userUid}`] = true
+            await roomRef.child(`matches/${match}/users`).update(obj)                    
+            await roomRef.child(`users/${userUid}`).update({
+                t: roomSnapshot.users[userUid].w + 1
+            })  
+
+            const userRef = admin.database().ref(`users/${userUid}`)
+            let userSnapshot = await userRef.once('value',(snapshot) => {
+                snapshot
+            })
+            userSnapshot = userSnapshot.val()
+            await userRef.child(`rooms/${matchRef.room}`).update({
+                t: userSnapshot.rooms[matchRef.room].w + 1
+            })                    
+            await userRef.child(`record`).update({
+                t: userSnapshot.record.w + 1
+            }) 
+
+
         }
         else if (stillInGame.length === 0){
             await matchRef.update({

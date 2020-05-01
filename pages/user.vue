@@ -224,6 +224,8 @@ export default {
                     is_creator: this.authUser.uid
                 }
                 obj[this.inputRoom].users[this.authUser.uid] = {
+                    user_name: this.user.user_name,
+                    email: this.user.email,
                     w: 0,
                     t: 0
                 }
@@ -280,6 +282,7 @@ export default {
                     await ref.child(`rooms/${this.inputRoom}/users`).update(obj)
                     let userObjRef = {}
                     userObjRef[this.inputRoom] = {
+                        user_name: this.user.user_name,
                         w: 0,
                         t: 0,
                         is_creator: false

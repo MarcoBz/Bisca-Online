@@ -5,7 +5,9 @@
         Bisca Online
       </cv-header-name>
       <template slot="header-global">
-        <cv-header-global-action aria-label="User avatar" aria-controls="user-panel">
+        <cv-header-global-action aria-label="User avatar" aria-controls="user-panel"
+          :disabled= "!authUser"
+          @click= "goToUser">
           <UserAvatar32 />
         </cv-header-global-action>
         <cv-header-global-action
@@ -35,7 +37,30 @@ export default {
     }
   },
 
+  computed: {
+      authUser() {
+      return this.$store.state.authUser
+      }
+  },
+
+  watch: {
+      authUser(newAuthUser) {      
+          if (newAuthUser === null){
+              this.$router.push({
+                  name: "login"
+              })        
+          }
+      },
+
+  },
+
   methods:{
+
+    goToUser(){
+      this.$router.push({
+          path: `/user`
+      })
+    },
 
     backHome(){
       this.$router.push({

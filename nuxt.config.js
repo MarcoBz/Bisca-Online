@@ -51,16 +51,16 @@ export default {
   },
 
   router: {
-    extendRoutes (routes, resolve) {
-      routes.push({
-        path: '*',
-        redirect : 'user'
-      },
-      {
-        path: '/',
-        redirect : 'user'
-      })
-    }
+    // extendRoutes (routes, resolve) {
+    //   routes.push({
+    //     path: '*',
+    //     redirect : 'user'
+    //   },
+    //   {
+    //     path: '/',
+    //     redirect : 'user'
+    //   })
+    // }
   },
 
 

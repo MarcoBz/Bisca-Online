@@ -133,7 +133,7 @@ export default {
             chart:{
                 title: "Chart",
                 columns: [
-                    "Position", "Name", "Record"
+                    "Position", "Name", "Email", "Record"
                 ],
                 filteredData: [],
                 record:[],
@@ -173,45 +173,52 @@ export default {
                     })
 
                     this.chart.filteredData = []
-                    this.chart.record = []
-                    for (let i in this.room.users){
-                        this.$fireDb.ref(`users/${i}`).on('value', (snapshot) => {
-                            let user = snapshot.val() 
+                    this.$fireDb.ref(`rooms/${this.$route.params.room}/users`).on('value', (snapshot) => {
+                        this.chart.record = []
+                        let users = Object.entries(snapshot.val()).forEach((user) => {
                             let obj = {
-                                user_name: user.user_name,
-                                w: this.room.users[i].w,
-                                t: this.room.users[i].t,
+                                email: user[1].email,
+                                user_name: user[1].user_name,
+                                w: this.room.users[user[0]].w,
+                                t: this.room.users[user[0]].t,
                                 rank: null
                             }
                             this.chart.record.push(obj)
                         })
-                    }    
+                    }) 
                     
-
-                    this.matchesTable.filteredData = []
-                    for (let i in this.room.matches){
-                        this.$fireDb.ref(`matches/${i}`).on('value', (snapshot) => {
-                            let match = snapshot.val() 
-                            let array = ['', i, null, match.n_lives, `${match.joined_players}/${match.n_players}`, match.ready_players, null]
-                            if (match.is_noWinner)  array[6] = "No Winner"
-                            else {
-                                if (match.winner_player_index || match.winner_player_index === 0){
-                                    this.$fireDb.ref(`players/${i}/player_${match.winner_player_index}`).on('value', (snapshot) => {
-                                        let player = snapshot.val()
-                                        array[6] = player.player_name
+                    this.$fireDb.ref(`rooms/${this.$route.params.room}/matches`).on('value', (snapshot) => {
+                        this.matchesTable.filteredData = []
+                        if(snapshot.val()) {
+                            console.log('test')
+                            let matches = Object.entries(snapshot.val()).forEach((match) => {
+                                console.log(match[0])
+                                this.$fireDb.ref(`matches/${match[0]}`).once('value', (snapshot) => {
+                                    console.log(match[0], 'aaaa')
+                                    let matchRef = snapshot.val()
+                                    let array = ['', match[0], null, matchRef.n_lives, `${matchRef.joined_players}/${matchRef.n_players}`, matchRef.ready_players, null]
+                                    if (matchRef.is_noWinner)  array[6] = "No Winner"
+                                    else {
+                                        if (matchRef.winner_player_index || matchRef.winner_player_index === 0){
+                                            this.$fireDb.ref(`players/${match[0]}/player_${matchRef.winner_player_index}`).once('value', (snapshot) => {
+                                                let player = snapshot.val()
+                                                array[6] = player.player_name
+                                            })
+                                        }
+                                    }
+                                    this.matchesTable.filteredData.unshift(array)
+                                    this.matchesTable.data.push({
+                                        match: match[0],
+                                        is_started: matchRef.is_started,
+                                        is_ended: matchRef.is_ended,
+                                        n_players: matchRef.n_players,
+                                        joined_players: matchRef.joined_players
                                     })
-                                }
-                            }
-                            this.matchesTable.filteredData.unshift(array)
-                            this.matchesTable.data.push({
-                                match: i,
-                                is_started: match.is_started,
-                                is_ended: match.is_ended,
-                                n_players: match.n_players,
-                                joined_players: match.joined_players
+                                })
+
                             })
-                        })                     
-                    }
+                        }
+                    })    
                 })       
             }) 
     },
@@ -310,7 +317,7 @@ export default {
                 return b.w - a.w || a.t - b.t;
             })
             this.chart.record.forEach(user => {
-                this.chart.filteredData[count] = [count+1, user.user_name, `W${user.w}-T${user.t}`]
+                this.chart.filteredData[count] = [count+1, user.user_name, user.email, `W${user.w}-T${user.t}`]
                 count += 1
             });
 
@@ -404,7 +411,7 @@ export default {
 
         goToMatch(match){
             this.$router.push({
-                path: `/${match}`
+                path: `matches/${match}`
             })            
         }
 
