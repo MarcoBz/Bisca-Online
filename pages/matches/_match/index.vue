@@ -43,20 +43,14 @@
 </template>
 
 <script>
-import PlayersComponent from "~/components/beta3/PlayersComponent.vue"
-import PlayerHand from "~/components/beta3/PlayerHand.vue"
-import OthersPlayersRow from "~/components/beta/OthersPlayersRow.vue"
-import PlayerTableHead from "~/components/beta/PlayerTableHead.vue"
-import DetailsRow from "~/components/beta/DetailsRow.vue"
-import DetailsTableHead from "~/components/beta/DetailsTableHead.vue"
-import NoticeBoard from "~/components/beta3/NoticeBoard.vue"
+import PlayersComponent from "~/components/v1/PlayersComponent.vue"
+import PlayerHand from "~/components/v1/PlayerHand.vue"
+import NoticeBoard from "~/components/v1/NoticeBoard.vue"
 export default {
 
     components: {
         PlayersComponent,
         PlayerHand,
-        DetailsRow,
-        DetailsTableHead,
         NoticeBoard
     },
 
@@ -126,12 +120,6 @@ export default {
     },
 
     methods:{
-
-        back(){
-            this.$router.push({
-                path: `/beta3/${inputMatch}`
-            })
-        },
 
         async endTurn(turnRef) {
             await turnRef.update({

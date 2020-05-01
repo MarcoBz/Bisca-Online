@@ -1,28 +1,37 @@
 export default ({ app, route, error, store, redirect }) => {
     // Every time the route changes (fired on initialization too)
-    console.log('a')
     app.router.afterEach((to, from) => {
-        console.log('b')
-        console.log('test', to, from)
-        redirect('/login')
-        // if (!store.state.authUser){
-        //     if (route.name != 'login') return redirect('/login')
-        // }
-        // else {
-        //     let splittedRoute = route.path.split('/')
-        //     if (splittedRoute.length != 3 || route.path === "/user") {
-        //         return app.router.push({name : 'user'})
-        //     }
-        //     else {
-        //         if (splittedRoute[2].split('_')[0] === 'rooms'){
-
-        //         }
-        //         else if (splittedRoute[2].split('_')[0] === 'matches'){
-
-        //         }
-        //         else return redirect('/user')
-        //     }
-        // }
+        if (!store.state.authUser){ 
+            if(to.path != '/login') return redirect('/login')
+        }
+        else {
+            if(to.path === '/login') return redirect('/user')
+            else{
+                let splittedRoute = to.path.split('/')
+                if (splittedRoute[1] === 'rooms'){
+                    if (splittedRoute.length === 3){
+                        app.$fireDb.ref(`rooms/${splittedRoute[2]}/users/${store.state.authUser.uid}`).once('value', (snapshot) => {
+                            let user = snapshot.val()
+                            if (!user)  error({ statusCode: 403, authorized: true })
+                        })
+                    }
+                    else return redirect('/user')
+                }
+                else if (splittedRoute[1] === 'matches'){
+                    if (splittedRoute.length === 3){
+                        app.$fireDb.ref(`matches/${splittedRoute[2]}/room`).once('value', (snapshot) => {
+                            let room = snapshot.val()
+                            app.$fireDb.ref(`rooms/${room}/users/${store.state.authUser.uid}`).once('value', (snapshot) => {
+                                let user = snapshot.val()
+                                if (!user)  error({ statusCode: 403, authorized: true })
+                            })
+                        })
+                    }
+                    else return redirect('/user')
+                }
+                else return redirect('/user')
+            }
+        }
     })
  }
 

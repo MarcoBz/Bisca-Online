@@ -168,6 +168,7 @@ export default {
 
     mounted(){
 
+        if(this.authUser){
             this.$fireDb.ref(`users/${this.authUser.uid}`).on('value', (snapshot) => {
                 this.user = snapshot.val()
                 if(this.user){
@@ -176,7 +177,7 @@ export default {
                 }
                
             }) 
-        
+        }
     },
 
     methods:{

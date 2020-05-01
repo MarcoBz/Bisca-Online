@@ -36,8 +36,8 @@
                     <template slot="data">
                         <cv-data-table-row v-for= "match in matchesTable.filteredData">
                             <cv-button @click= "joinMatch(match[1])" v-if = "!room.matches[match[1]].users" type="button" style="width: 100%;">Join</cv-button>
-                            <cv-button @click= "joinMatch(match[1])" v-else-if = "!room.matches[match[1]].users[authUser.uid] && matchesTable.data.find(c=>c.match === match[1]).joined_players < matchesTable.data.find(c=>c.match === match[1]).n_players" type="button" style="width: 100%;">Join</cv-button>
-                            <cv-button @click= "goToMatch(match[1])" v-else-if = "!room.matches[match[1]].users[authUser.uid] && matchesTable.data.find(c=>c.match === match[1]).joined_players >= matchesTable.data.find(c=>c.match === match[1]).n_players" type="button" style="width: 100%;" >Go as Guest</cv-button>
+                            <cv-button @click= "joinMatch(match[1])" v-else-if = "!room.matches[match[1]].users[authUser.uid] && matchesTable.data.find(c=>c.match === match[1]).all_joined" type="button" style="width: 100%;">Join</cv-button>
+                            <cv-button @click= "goToMatch(match[1])" v-else-if = "!room.matches[match[1]].users[authUser.uid] && matchesTable.data.find(c=>c.match === match[1]).all_joined" type="button" style="width: 100%;" >Go as Guest</cv-button>
                             <cv-button @click= "goToMatch(match[1])" v-else-if = "room.matches[match[1]].users[authUser.uid]" type="button" style="width: 100%;">Go</cv-button>
                             <cv-data-table-cell>{{match[1]}}</cv-data-table-cell>
                             <cv-data-table-cell>{{match[2]}}</cv-data-table-cell>
@@ -190,11 +190,8 @@ export default {
                     this.$fireDb.ref(`rooms/${this.$route.params.room}/matches`).on('value', (snapshot) => {
                         this.matchesTable.filteredData = []
                         if(snapshot.val()) {
-                            console.log('test')
                             let matches = Object.entries(snapshot.val()).forEach((match) => {
-                                console.log(match[0])
                                 this.$fireDb.ref(`matches/${match[0]}`).once('value', (snapshot) => {
-                                    console.log(match[0], 'aaaa')
                                     let matchRef = snapshot.val()
                                     let array = ['', match[0], null, matchRef.n_lives, `${matchRef.joined_players}/${matchRef.n_players}`, matchRef.ready_players, null]
                                     if (matchRef.is_noWinner)  array[6] = "No Winner"
@@ -242,11 +239,17 @@ export default {
                     snapshot
                 })
                 matchJoined = matchJoined.val()
-                if (!playerExists && matchJoined.joined_players < matchJoined.n_players){
+                if (!playerExists && !matchJoined.all_joined){
                     let newPlayerID = matchJoined.joined_players
                     await matchRef.update({
                         'joined_players': matchJoined.joined_players + 1
                     })
+
+                    if (matchJoined.joined_players = matchJoined.n_players){
+                        await matchRef.update({
+                            'all_joined': true
+                        })
+                    }
 
                     const playersRef = this.$fireDb.ref(`players/${match}`)
                     let playerObj = {}
@@ -354,6 +357,7 @@ export default {
                     winner_player_index: null,
                     is_noWinner: false,   
                     all_ready: false,
+                    all_joined: false,
                     egg_played: false    
                 }
 
@@ -411,7 +415,7 @@ export default {
 
         goToMatch(match){
             this.$router.push({
-                path: `matches/${match}`
+                path: `/matches/${match}`
             })            
         }
 

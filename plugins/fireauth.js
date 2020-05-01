@@ -4,7 +4,6 @@ export default context => {
     const { store } = context 
 
     return new Promise((resolve, reject) => {
-        console.log('c')
         auth.onAuthStateChanged(user => {
             if (user) {
                 let userPayload = {
