@@ -184,7 +184,7 @@ export default {
 
         goToRoom(){
             this.$router.push({
-                path: `rooms/${this.chosenRoomName}`
+                path: `/v1/rooms/${this.chosenRoomName}`
             })
         },
 
@@ -301,7 +301,7 @@ export default {
             this.$store.dispatch('signOut')
             .then(() => {
                 this.$router.push({
-                    path: `/login`
+                    path: `/v1/login`
                 })
             })
             .catch((e) => {

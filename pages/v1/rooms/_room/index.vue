@@ -415,7 +415,7 @@ export default {
 
         goToMatch(match){
             this.$router.push({
-                path: `/matches/${match}`
+                path: `/v1/matches/${match}`
             })            
         }
 

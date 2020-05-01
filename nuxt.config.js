@@ -54,11 +54,11 @@ export default {
     extendRoutes (routes, resolve) {
       routes.push({
         path: '*',
-        redirect : 'user'
+        redirect : '/v1/user'
       },
       {
         path: '/',
-        redirect : 'user'
+        redirect : '/v1/user'
       })
     }
   },
