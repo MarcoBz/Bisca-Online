@@ -249,6 +249,13 @@ export default {
 
   watch: {
 
+    'player': function(newData, oldData){
+        if (newData[1].his_turn || !oldData[1].his_turn){
+            let audioObj = new Audio('http://soundbible.com/mp3/Elevator Ding-SoundBible.com-685385892.mp3')
+            audioObj.play()
+        }
+    },
+
     'match.current_game': function(newGame){
 
         if (newGame && this.match.current_player_index === parseInt(this.player[0].split('_')[1])){

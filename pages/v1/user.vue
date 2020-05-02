@@ -58,7 +58,7 @@
             <div class = "col-7"></div>
         </div> 
 
-        <div class= "row mt-5 mb-1">
+        <!-- <div class= "row mt-5 mb-1">
             <div class = "col-2"></div>
             <div class = "col-8 text-left">
                 <cv-data-table
@@ -66,7 +66,7 @@
                     :columns= "columns" :data="filteredData"   ref="table">
                 </cv-data-table>
             </div>
-        </div> 
+        </div>  -->
 
         <cv-modal
             :visible= "modalRoom"

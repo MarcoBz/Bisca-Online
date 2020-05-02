@@ -160,8 +160,8 @@ export default {
         }
     },
 
-    mounted(){
-            this.$fireDb.ref(`users/${this.authUser.uid}`).on('value', (snapshot) => {
+    async mounted(){
+            await this.$fireDb.ref(`users/${this.authUser.uid}`).on('value', (snapshot) => {
                 this.user = snapshot.val()
                 if(this.user){
                     if (!this.user.user_name) this.visibleModal = true
@@ -188,42 +188,59 @@ export default {
                             })
                         }
                     }) 
-                    
-                    this.$fireDb.ref(`rooms/${this.$route.params.room}/matches`).on('value', (snapshot) => {
-                        this.matchesTable.filteredData = []
-                        if(snapshot.val()) {
-                            let matches = Object.entries(snapshot.val()).forEach((match) => {
-                                this.$fireDb.ref(`matches/${match[0]}`).once('value', (snapshot) => {
-                                    let matchRef = snapshot.val()
-                                    let array = ['', match[0], null, matchRef.n_lives, `${matchRef.joined_players}/${matchRef.n_players}`, matchRef.ready_players, null]
-                                    if (matchRef.is_noWinner)  array[6] = "No Winner"
-                                    else {
-                                        if (matchRef.winner_player_index || matchRef.winner_player_index === 0){
-                                            this.$fireDb.ref(`players/${match[0]}/player_${matchRef.winner_player_index}`).once('value', (snapshot) => {
-                                                let player = snapshot.val()
-                                                array[6] = player.player_name
-                                            })
-                                        }
-                                    }
-                                    this.matchesTable.filteredData.unshift(array)
-                                    this.matchesTable.data.push({
-                                        match: match[0],
-                                        is_started: matchRef.is_started,
-                                        is_ended: matchRef.is_ended,
-                                        n_players: matchRef.n_players,
-                                        joined_players: matchRef.joined_players,
-                                        all_joined: matchRef.all_joined
-                                    })
-                                })
-
-                            })
-                        }
-                    })    
                 })       
             }) 
+            this.getMatchesChart()
+
+    },
+
+    watch: {
+
+        authUser(newAuthUser) {      
+            if (newAuthUser === null){
+                this.$router.push({
+                    name: "login"
+                })        
+            }
+        },
+
     },
 
     methods:{
+
+        async getMatchesChart(){
+            await this.$fireDb.ref(`rooms/${this.$route.params.room}/matches`).once('value', (snapshot) => {
+                this.matchesTable.filteredData = []
+                if(snapshot.val()) {
+                    let matches = Object.entries(snapshot.val()).forEach((match) => {
+                        this.$fireDb.ref(`matches/${match[0]}`).once('value', (snapshot) => {
+                            let matchRef = snapshot.val()
+                            let array = ['', match[0], null, matchRef.n_lives, `${matchRef.joined_players}/${matchRef.n_players}`, matchRef.ready_players, null]
+                            if (matchRef.is_noWinner)  array[6] = "No Winner"
+                            else {
+                                if (matchRef.winner_player_index || matchRef.winner_player_index === 0){
+                                    this.$fireDb.ref(`players/${match[0]}/player_${matchRef.winner_player_index}`).once('value', (snapshot) => {
+                                        let player = snapshot.val()
+                                        array[6] = player.player_name
+                                    })
+                                }
+                            }
+                            this.matchesTable.filteredData.unshift(array)
+                            this.matchesTable.data.push({
+                                match: match[0],
+                                is_started: matchRef.is_started,
+                                is_ended: matchRef.is_ended,
+                                n_players: matchRef.n_players,
+                                joined_players: matchRef.joined_players,
+                                all_joined: matchRef.all_joined
+                            })
+                        })
+
+                    })
+                }
+            })    
+        },
+
         async joinMatch(match) {
             try {
                 const playersRef = this.$fireDb.ref(`players/${match}`)
@@ -304,6 +321,7 @@ export default {
                     await userRef.child(`record`).update({
                         t: userSnapshot.record.t + 1
                     }) 
+                    this.getMatchesChart()
 
                 }
                 else{
@@ -399,10 +417,11 @@ export default {
                     n_lives : parseInt(this.matchData.nLives),
                 }
                 await roomRef.child('matches').update(roomObj)  
-
+                
+                    
                 this.visibleModal = false  
                 this.createdModal = true
-                
+                this.getMatchesChart()
 
 
                 } catch (e) {
