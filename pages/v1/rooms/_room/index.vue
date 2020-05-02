@@ -36,7 +36,7 @@
                     <template slot="data">
                         <cv-data-table-row v-for= "match in matchesTable.filteredData">
                             <cv-button @click= "joinMatch(match[1])" v-if = "!room.matches[match[1]].users" type="button" style="width: 100%;">Join</cv-button>
-                            <cv-button @click= "joinMatch(match[1])" v-else-if = "!room.matches[match[1]].users[authUser.uid] && matchesTable.data.find(c=>c.match === match[1]).all_joined" type="button" style="width: 100%;">Join</cv-button>
+                            <cv-button @click= "joinMatch(match[1])" v-else-if = "!room.matches[match[1]].users[authUser.uid] && !matchesTable.data.find(c=>c.match === match[1]).all_joined" type="button" style="width: 100%;">Join</cv-button>
                             <cv-button @click= "goToMatch(match[1])" v-else-if = "!room.matches[match[1]].users[authUser.uid] && matchesTable.data.find(c=>c.match === match[1]).all_joined" type="button" style="width: 100%;" >Go as Guest</cv-button>
                             <cv-button @click= "goToMatch(match[1])" v-else-if = "room.matches[match[1]].users[authUser.uid]" type="button" style="width: 100%;">Go</cv-button>
                             <cv-data-table-cell>{{match[1]}}</cv-data-table-cell>
@@ -175,16 +175,18 @@ export default {
                     this.chart.filteredData = []
                     this.$fireDb.ref(`rooms/${this.$route.params.room}/users`).on('value', (snapshot) => {
                         this.chart.record = []
-                        let users = Object.entries(snapshot.val()).forEach((user) => {
-                            let obj = {
-                                email: user[1].email,
-                                user_name: user[1].user_name,
-                                w: this.room.users[user[0]].w,
-                                t: this.room.users[user[0]].t,
-                                rank: null
-                            }
-                            this.chart.record.push(obj)
-                        })
+                        if (snapshot.val()){
+                            let users = Object.entries(snapshot.val()).forEach((user) => {
+                                let obj = {
+                                    email: user[1].email,
+                                    user_name: user[1].user_name,
+                                    w: this.room.users[user[0]].w,
+                                    t: this.room.users[user[0]].t,
+                                    rank: null
+                                }
+                                this.chart.record.push(obj)
+                            })
+                        }
                     }) 
                     
                     this.$fireDb.ref(`rooms/${this.$route.params.room}/matches`).on('value', (snapshot) => {
@@ -209,7 +211,8 @@ export default {
                                         is_started: matchRef.is_started,
                                         is_ended: matchRef.is_ended,
                                         n_players: matchRef.n_players,
-                                        joined_players: matchRef.joined_players
+                                        joined_players: matchRef.joined_players,
+                                        all_joined: matchRef.all_joined
                                     })
                                 })
 
@@ -245,7 +248,7 @@ export default {
                         'joined_players': matchJoined.joined_players + 1
                     })
 
-                    if (matchJoined.joined_players = matchJoined.n_players){
+                    if (matchJoined.joined_players === matchJoined.n_players){
                         await matchRef.update({
                             'all_joined': true
                         })

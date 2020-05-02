@@ -5,7 +5,6 @@ admin.initializeApp();
 
 exports.createUser = functions.auth.user().onCreate(async (user) => {
 
-        
         const ref = admin.database().ref()
         let totalUsers = await ref.child('total_users').once('value',(snapshot) => {
             snapshot
@@ -27,8 +26,6 @@ exports.createUser = functions.auth.user().onCreate(async (user) => {
                 t: 0
           }
         }
-
-        console.log(obj)
         await usersRef.update(obj)
 });
 
