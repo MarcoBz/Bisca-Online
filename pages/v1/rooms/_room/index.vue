@@ -161,7 +161,7 @@ export default {
     },
 
     async mounted(){
-            await this.$fireDb.ref(`users/${this.authUser.uid}`).on('value', (snapshot) => {
+             this.$fireDb.ref(`users/${this.authUser.uid}`).on('value', (snapshot) => {
                 this.user = snapshot.val()
                 if(this.user){
                     if (!this.user.user_name) this.visibleModal = true
@@ -173,25 +173,55 @@ export default {
                     })
 
                     this.chart.filteredData = []
-                    this.$fireDb.ref(`rooms/${this.$route.params.room}/users`).on('value', (snapshot) => {
-                        this.chart.record = []
-                        if (snapshot.val()){
-                            let users = Object.entries(snapshot.val()).forEach((user) => {
-                                let obj = {
-                                    email: user[1].email,
-                                    user_name: user[1].user_name,
-                                    w: this.room.users[user[0]].w,
-                                    t: this.room.users[user[0]].t,
-                                    rank: null
-                                }
-                                this.chart.record.push(obj)
-                            })
-                        }
-                    }) 
-                })       
-            }) 
-            this.getMatchesChart()
+                    this.chart.record = []
+                    if (this.room.users){
+                        let users = Object.entries(this.room.users).forEach((user) => {
+                            let obj = {
+                                email: user[1].email,
+                                user_name: user[1].user_name,
+                                w: this.room.users[user[0]].w,
+                                t: this.room.users[user[0]].t,
+                                rank: null
+                            }
+                            this.chart.record.push(obj)
+                        })
+                    }
 
+                    this.matchesTable.filteredData = []
+                    this.matchesTable.data = []
+                    if(this.room.matches) {
+                        for (let i = 0; i < Object.entries(this.room.matches).length; i++){
+                            let match = Object.entries(this.room.matches)[i]
+                            console.log(match[0])
+                                this.$fireDb.ref(`matches/${match[0]}`).once('value', (snapshot) => {
+                                    let matchRef = snapshot.val()
+                                    let array = ['', match[0], null, matchRef.n_lives, `${matchRef.joined_players}/${matchRef.n_players}`, matchRef.ready_players, null]
+                                    if (matchRef.is_noWinner)  array[6] = "No Winner"
+                                    else {
+                                        if (matchRef.winner_player_index || matchRef.winner_player_index === 0){
+                                            this.$fireDb.ref(`players/${match[0]}/player_${matchRef.winner_player_index}`).once('value', (snapshot) => {
+                                                let player = snapshot.val()
+                                                array[6] = player.player_name
+                                            })
+                                        }
+                                    }
+                                    this.matchesTable.filteredData.unshift(array)
+                                    this.matchesTable.data.push({
+                                        match: match[0],
+                                        is_started: matchRef.is_started,
+                                        is_ended: matchRef.is_ended,
+                                        n_players: matchRef.n_players,
+                                        joined_players: matchRef.joined_players,
+                                        all_joined: matchRef.all_joined,
+                                        creationDate: matchRef.creation_date
+                                    })
+                                })
+
+                        }
+                    }
+                })  
+                .then(() => console.log('diocan2'))     
+            }) 
     },
 
     watch: {
@@ -207,39 +237,6 @@ export default {
     },
 
     methods:{
-
-        async getMatchesChart(){
-            await this.$fireDb.ref(`rooms/${this.$route.params.room}/matches`).once('value', (snapshot) => {
-                this.matchesTable.filteredData = []
-                if(snapshot.val()) {
-                    let matches = Object.entries(snapshot.val()).forEach((match) => {
-                        this.$fireDb.ref(`matches/${match[0]}`).once('value', (snapshot) => {
-                            let matchRef = snapshot.val()
-                            let array = ['', match[0], null, matchRef.n_lives, `${matchRef.joined_players}/${matchRef.n_players}`, matchRef.ready_players, null]
-                            if (matchRef.is_noWinner)  array[6] = "No Winner"
-                            else {
-                                if (matchRef.winner_player_index || matchRef.winner_player_index === 0){
-                                    this.$fireDb.ref(`players/${match[0]}/player_${matchRef.winner_player_index}`).once('value', (snapshot) => {
-                                        let player = snapshot.val()
-                                        array[6] = player.player_name
-                                    })
-                                }
-                            }
-                            this.matchesTable.filteredData.unshift(array)
-                            this.matchesTable.data.push({
-                                match: match[0],
-                                is_started: matchRef.is_started,
-                                is_ended: matchRef.is_ended,
-                                n_players: matchRef.n_players,
-                                joined_players: matchRef.joined_players,
-                                all_joined: matchRef.all_joined
-                            })
-                        })
-
-                    })
-                }
-            })    
-        },
 
         async joinMatch(match) {
             try {
@@ -265,7 +262,7 @@ export default {
                         'joined_players': matchJoined.joined_players + 1
                     })
 
-                    if (matchJoined.joined_players === matchJoined.n_players){
+                    if (matchJoined.joined_players === matchJoined.n_players - 1){
                         await matchRef.update({
                             'all_joined': true
                         })
@@ -299,30 +296,20 @@ export default {
                     await playersRef.update(playerObj)
                     
                     const roomRef = this.$fireDb.ref(`rooms/${this.$route.params.room}`)
-                    let roomSnapshot = await roomRef.once('value',(snapshot) => {
-                        snapshot
-                    })
-                    roomSnapshot = roomSnapshot.val()
                     let obj = {}
                     obj[`${this.authUser.uid}`] = true
                     await roomRef.child(`matches/${match}/users`).update(obj)                    
                     await roomRef.child(`users/${this.authUser.uid}`).update({
-                        t: roomSnapshot.users[this.authUser.uid].t + 1
+                        t: this.room.users[this.authUser.uid].t + 1
                     })  
 
                     const userRef = this.$fireDb.ref(`users/${this.authUser.uid}`)
-                    let userSnapshot = await userRef.once('value',(snapshot) => {
-                        snapshot
-                    })
-                    userSnapshot = userSnapshot.val()
                     await userRef.child(`rooms/${this.$route.params.room}`).update({
-                        t: userSnapshot.rooms[this.$route.params.room].t + 1
+                        t: this.user.rooms[this.$route.params.room].t + 1
                     })                    
                     await userRef.child(`record`).update({
-                        t: userSnapshot.record.t + 1
+                        t: this.user.record.t + 1
                     }) 
-                    this.getMatchesChart()
-
                 }
                 else{
                     console.log('already exists')
@@ -421,8 +408,6 @@ export default {
                     
                 this.visibleModal = false  
                 this.createdModal = true
-                this.getMatchesChart()
-
 
                 } catch (e) {
                 console.log(e)
