@@ -190,37 +190,36 @@ export default {
                     this.matchesTable.filteredData = []
                     this.matchesTable.data = []
                     if(this.room.matches) {
-                        for (let i = 0; i < Object.entries(this.room.matches).length; i++){
-                            let match = Object.entries(this.room.matches)[i]
-                            console.log(match[0])
-                                this.$fireDb.ref(`matches/${match[0]}`).once('value', (snapshot) => {
-                                    let matchRef = snapshot.val()
-                                    let array = ['', match[0], null, matchRef.n_lives, `${matchRef.joined_players}/${matchRef.n_players}`, matchRef.ready_players, null]
-                                    if (matchRef.is_noWinner)  array[6] = "No Winner"
-                                    else {
-                                        if (matchRef.winner_player_index || matchRef.winner_player_index === 0){
-                                            this.$fireDb.ref(`players/${match[0]}/player_${matchRef.winner_player_index}`).once('value', (snapshot) => {
-                                                let player = snapshot.val()
-                                                array[6] = player.player_name
-                                            })
-                                        }
+                        let matches = Object.entries(this.room.matches).forEach((match) => {
+                            this.$fireDb.ref(`matches/${match[0]}`).on('value', (snapshot) => {
+                                let matchRef = snapshot.val()
+                                let array = ['', match[0], null, matchRef.n_lives, `${matchRef.joined_players}/${matchRef.n_players}`, matchRef.ready_players, null]
+                                if (matchRef.is_noWinner)  array[6] = "No Winner"
+                                else {
+                                    if (matchRef.winner_player_index || matchRef.winner_player_index === 0){
+                                        this.$fireDb.ref(`players/${match[0]}/player_${matchRef.winner_player_index}`).on('value', (snapshot) => {
+                                            let player = snapshot.val()
+                                            array[6] = player.player_name
+                                        })
                                     }
-                                    this.matchesTable.filteredData.unshift(array)
-                                    this.matchesTable.data.push({
-                                        match: match[0],
-                                        is_started: matchRef.is_started,
-                                        is_ended: matchRef.is_ended,
-                                        n_players: matchRef.n_players,
-                                        joined_players: matchRef.joined_players,
-                                        all_joined: matchRef.all_joined,
-                                        creationDate: matchRef.creation_date
-                                    })
+                                }
+                                this.matchesTable.filteredData.unshift(array)
+                                this.matchesTable.data.push({
+                                    match: match[0],
+                                    is_started: matchRef.is_started,
+                                    is_ended: matchRef.is_ended,
+                                    n_players: matchRef.n_players,
+                                    joined_players: matchRef.joined_players,
+                                    all_joined: matchRef.all_joined,
+                                    creationDate: matchRef.creation_date
                                 })
+                            })
 
-                        }
+                        }) 
                     }
-                })  
-                .then(() => console.log('diocan2'))     
+
+
+                })       
             }) 
     },
 
