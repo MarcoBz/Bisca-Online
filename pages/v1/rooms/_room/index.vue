@@ -141,7 +141,7 @@ export default {
             showPassword: false,
             matchData: {
                 nLives: null,
-                nCards: 5,
+                nCards: 3,
                 nPlayers: null
             },
             createdModal: false,

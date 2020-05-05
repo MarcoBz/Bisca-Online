@@ -168,7 +168,13 @@ exports.updateLives = functions.database.ref('/games/{match}/{game}/is_ended')
                 snapshot
             })
             let userUid = uid.val()
-            const roomRef = admin.database().ref(`rooms/${matchRef.room}`)
+
+            let  room = await matchRef.child('room').once('value',(snapshot) => {
+                snapshot
+            })
+            room = room.val()
+
+            const roomRef = admin.database().ref(`rooms/${room}`)
             let roomSnapshot = await roomRef.once('value',(snapshot) => {
                 snapshot
             })
@@ -177,7 +183,7 @@ exports.updateLives = functions.database.ref('/games/{match}/{game}/is_ended')
             obj[`${userUid}`] = true
             await roomRef.child(`matches/${match}/users`).update(obj)                    
             await roomRef.child(`users/${userUid}`).update({
-                t: roomSnapshot.users[userUid].w + 1
+                w: roomSnapshot.users[userUid].w + 1
             })  
 
             const userRef = admin.database().ref(`users/${userUid}`)
@@ -185,11 +191,11 @@ exports.updateLives = functions.database.ref('/games/{match}/{game}/is_ended')
                 snapshot
             })
             userSnapshot = userSnapshot.val()
-            await userRef.child(`rooms/${matchRef.room}`).update({
-                t: userSnapshot.rooms[matchRef.room].w + 1
+            await userRef.child(`rooms/${room}`).update({
+                w: userSnapshot.rooms[room].w + 1
             })                    
             await userRef.child(`record`).update({
-                t: userSnapshot.record.w + 1
+                w: userSnapshot.record.w + 1
             }) 
 
 
