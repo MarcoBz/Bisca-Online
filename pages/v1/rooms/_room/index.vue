@@ -34,12 +34,12 @@
                         :columns= "matchesTable.columns"
                         v-if = "room">
                     <template slot="data">
-                        <cv-data-table-row v-for= "match in matchesTable.filteredData">
-                            <cv-button @click= "joinMatch(match[1])" v-if = "!room.matches[match[1]].users" type="button" style="width: 100%;">Join</cv-button>
-                            <cv-button @click= "joinMatch(match[1])" v-else-if = "!room.matches[match[1]].users[authUser.uid] && !matchesTable.data.find(c=>c.match === match[1]).all_joined" type="button" style="width: 100%;">Join</cv-button>
-                            <cv-button @click= "goToMatch(match[1])" v-else-if = "!room.matches[match[1]].users[authUser.uid] && matchesTable.data.find(c=>c.match === match[1]).all_joined" type="button" style="width: 100%;" >Go as Guest</cv-button>
-                            <cv-button @click= "goToMatch(match[1])" v-else-if = "room.matches[match[1]].users[authUser.uid]" type="button" style="width: 100%;">Go</cv-button>
-                            <cv-data-table-cell>{{match[1]}}</cv-data-table-cell>
+                        <cv-data-table-row v-for= "(match, matchName) in matchesTable.filteredData">
+                            <cv-button @click= "joinMatch(matchName)" v-if = "!room.matches[matchName].users" type="button" style="width: 100%;">Join</cv-button>
+                            <cv-button @click= "joinMatch(matchName)" v-else-if = "!room.matches[matchName].users[authUser.uid] && !matchesTable.data.find(c=>c.match === matchName).all_joined" type="button" style="width: 100%;">Join</cv-button>
+                            <cv-button @click= "goToMatch(matchName)" v-else-if = "!room.matches[matchName].users[authUser.uid] && matchesTable.data.find(c=>c.match === matchName).all_joined" type="button" style="width: 100%;" >Go as Guest</cv-button>
+                            <cv-button @click= "goToMatch(matchName)" v-else-if = "room.matches[matchName].users[authUser.uid]" type="button" style="width: 100%;">Go</cv-button>
+                            <cv-data-table-cell>{{matchName}}</cv-data-table-cell>
                             <cv-data-table-cell>{{match[2]}}</cv-data-table-cell>
                             <cv-data-table-cell>{{match[3]}}</cv-data-table-cell>
                             <cv-data-table-cell>{{match[4]}}</cv-data-table-cell>
@@ -144,6 +144,8 @@ export default {
                 nCards: 5,
                 nPlayers: null
             },
+            tempFilteredData: {},
+            tempData: [],
             createdModal: false,
             totalMatches: null,
             visibleModal: false,
@@ -152,7 +154,7 @@ export default {
                 columns: [
                     "", "match", "status", "Lives", "Joined", "Ready", "Winner"
                 ],
-                filteredData: [],
+                filteredData: {},
                 data:[]
             },
             user: null,
@@ -174,48 +176,56 @@ export default {
 
                     this.chart.filteredData = []
                     this.chart.record = []
-                    if (this.room.users){
-                        let users = Object.entries(this.room.users).forEach((user) => {
-                            let obj = {
-                                email: user[1].email,
-                                user_name: user[1].user_name,
-                                w: this.room.users[user[0]].w,
-                                t: this.room.users[user[0]].t,
-                                rank: null
-                            }
-                            this.chart.record.push(obj)
-                        })
-                    }
-
-                    this.matchesTable.filteredData = []
-                    this.matchesTable.data = []
-                    if(this.room.matches) {
-                        let matches = Object.entries(this.room.matches).forEach((match) => {
-                            this.$fireDb.ref(`matches/${match[0]}`).on('value', (snapshot) => {
-                                let matchRef = snapshot.val()
-                                let array = ['', match[0], null, matchRef.n_lives, `${matchRef.joined_players}/${matchRef.n_players}`, matchRef.ready_players, null]
-                                if (matchRef.is_noWinner)  array[6] = "No Winner"
-                                else {
-                                    if (matchRef.winner_player_index || matchRef.winner_player_index === 0){
-                                        this.$fireDb.ref(`players/${match[0]}/player_${matchRef.winner_player_index}`).on('value', (snapshot) => {
-                                            let player = snapshot.val()
-                                            array[6] = player.player_name
-                                        })
-                                    }
+                    if(this.room){
+                        if (this.room.users){
+                            let users = Object.entries(this.room.users).forEach((user) => {
+                                let obj = {
+                                    email: user[1].email,
+                                    user_name: user[1].user_name,
+                                    w: this.room.users[user[0]].w,
+                                    t: this.room.users[user[0]].t,
+                                    rank: null
                                 }
-                                this.matchesTable.filteredData.unshift(array)
-                                this.matchesTable.data.push({
-                                    match: match[0],
-                                    is_started: matchRef.is_started,
-                                    is_ended: matchRef.is_ended,
-                                    n_players: matchRef.n_players,
-                                    joined_players: matchRef.joined_players,
-                                    all_joined: matchRef.all_joined,
-                                    creationDate: matchRef.creation_date
-                                })
+                                this.chart.record.push(obj)
                             })
+                        }
 
-                        }) 
+
+                        // this.matchesTable.filteredData = []
+                        this.tempData = []
+                        if(this.room.matches) {
+                            let matches = Object.entries(this.room.matches).map((match) => {
+                                return new Promise((resolve) => {
+                                    this.$fireDb.ref(`matches/${match[0]}`).on('value', (snapshot) => {
+                                        let matchRef = snapshot.val()
+                                        let array = ['', match[0], null, matchRef.n_lives, `${matchRef.joined_players}/${matchRef.n_players}`, matchRef.ready_players, null]
+                                        if (matchRef.is_noWinner)  array[6] = "No Winner"
+                                        else {
+                                            if (matchRef.winner_player_index || matchRef.winner_player_index === 0){
+                                                this.$fireDb.ref(`players/${match[0]}/player_${matchRef.winner_player_index}`).on('value', (snapshot) => {
+                                                    let player = snapshot.val()
+                                                    array[6] = player.player_name
+                                                })
+                                            }
+                                        }
+                                        this.tempFilteredData[match[0]] = array
+                                        this.tempData.push({
+                                            is_started: matchRef.is_started,
+                                            is_ended: matchRef.is_ended,
+                                            n_players: matchRef.n_players,
+                                            joined_players: matchRef.joined_players,
+                                            all_joined: matchRef.all_joined,
+                                            creationDate: matchRef.creation_date
+                                        })
+                                        resolve()
+                                    })
+                                });
+                            }) 
+                            Promise.all(matches).then(() => {
+                                this.matchesTable.filteredData = this.tempFilteredData
+                                this.matchesTable.data = this.tempData
+                            });
+                        }
                     }
 
 
@@ -327,7 +337,7 @@ export default {
                 return b.w - a.w || a.t - b.t;
             })
             this.chart.record.forEach(user => {
-                this.chart.filteredData[count] = [count+1, user.user_name, user.email, `W${user.w}-T${user.t}`]
+                this.chart.filteredData[count] = [count+1, user.user_name, user.email, `${user.w}/${user.t}`]
                 count += 1
             });
 
