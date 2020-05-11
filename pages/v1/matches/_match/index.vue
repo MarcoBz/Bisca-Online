@@ -20,8 +20,8 @@
                                     v-bind:turn = turn
                                     v-bind:match = match
                                     v-bind:matchName = "inputMatch" 
-                                    v-on:ready="updateReady"
                                     v-on:playedCard="playedCard"  />
+                                    <!-- v-on:ready="updateReady" -->
                 </div>
             </div> 
 
@@ -32,7 +32,6 @@
                                 v-bind:game = game
                                 v-bind:turn = turn
                                 v-bind:matchName = "inputMatch" 
-                                v-on:ready="updateReady" 
                                 v-on:setCall="setCall"
                                 v-on:playedCard="playedCard"/>
                 </div>
@@ -248,22 +247,22 @@ export default {
             }  
         },
 
-        async updateReady(){
-            try {
-                const matchRef = this.$fireDb.ref(`matches/${this.inputMatch}`)
-                await matchRef.update({
-                    'ready_players': this.match.ready_players + 1
-                })
-                if (this.match.ready_players === this.match.n_players){
-                    await matchRef.update({
-                        'all_ready': true
-                    })                
-                }
-            } catch (e) {
-            console.log(e)
-            return
-            }          
-        }
+        // async updateReady(){
+        //     try {
+        //         const matchRef = this.$fireDb.ref(`matches/${this.inputMatch}`)
+        //         await matchRef.update({
+        //             'ready_players': this.match.ready_players + 1
+        //         })
+        //         if (this.match.ready_players === this.match.n_players){
+        //             await matchRef.update({
+        //                 'all_ready': true
+        //             })                
+        //         }
+        //     } catch (e) {
+        //     console.log(e)
+        //     return
+        //     }          
+        // }
     }  
 }
 </script>

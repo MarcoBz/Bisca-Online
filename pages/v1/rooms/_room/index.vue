@@ -45,6 +45,10 @@
                             <cv-data-table-cell>{{match[4]}}</cv-data-table-cell>
                             <cv-data-table-cell>{{match[5]}}</cv-data-table-cell>
                             <cv-data-table-cell>{{match[6]}}</cv-data-table-cell>
+                            <cv-button v-if = "!room.matches[match[1]].users || matchesTable.data.find(c=>c.match === match[1]).is_ended" kind="danger" :disabled= true type="button" style="width: 100%;">Report Error</cv-button>
+                            <cv-button @click= "reportError(match[1])" v-else-if = "!error_reported[match[1]] && room.matches[match[1]].users[authUser.uid]" kind="danger" type="button" style="width: 100%;">Report Error</cv-button>
+                            <cv-button v-else-if = "!room.matches[match[1]].users[authUser.uid]" kind="danger" :disabled= true type="button" style="width: 100%;">Report Error</cv-button>
+                            <cv-button v-else kind="danger" type="button" :disabled= true style="width: 100%;">Error</cv-button>
                         </cv-data-table-row>
                     </template>
                 </cv-data-table>
@@ -150,13 +154,14 @@ export default {
             matchesTable: {
                 title: "Matches",
                 columns: [
-                    "", "match", "status", "Lives", "Joined", "Ready", "Winner"
+                    "", "match", "status", "Lives", "Joined", "Ready", "Winner", "Report Error"
                 ],
                 filteredData: [],
                 data:[]
             },
             user: null,
-            room: null
+            room: null,
+            error_reported: {}
         }
     },
 
@@ -187,11 +192,33 @@ export default {
                         })
                     }
 
+
+
                     this.matchesTable.filteredData = []
                     this.matchesTable.data = []
+                    this.error_reported = {}
                     if(this.room.matches) {
                         let matches = Object.entries(this.room.matches).forEach((match) => {
+
                             this.$fireDb.ref(`matches/${match[0]}`).on('value', (snapshot) => {
+
+                                let error_reported = false
+                                this.$fireDb.ref(`players/${match[0]}/`).on('value', (snapshot) => {
+                                    let players = snapshot.val()
+                                    if (players){
+                                        players = Object.entries(players)
+                                        let player = players.find( c => c[1].player_uid === this.authUser.uid)
+                                        if(player){
+                                            const playerRef = this.$fireDb.ref(`players/${match[0]}/${player[0]}/report_error`).on('value', (snapshot) => {
+                                                if (snapshot.val()) error_reported = true 
+                                                this.error_reported[match[0]] = error_reported
+                                            })
+                                        } 
+                                    }                     
+                                })
+
+                                this.error_reported[match[0]] = error_reported
+
                                 let matchRef = snapshot.val()
                                 let array = ['', match[0], null, matchRef.n_lives, `${matchRef.joined_players}/${matchRef.n_players}`, matchRef.ready_players, null]
                                 if (matchRef.is_noWinner)  array[6] = "No Winner"
@@ -203,6 +230,7 @@ export default {
                                         })
                                     }
                                 }
+
                                 this.matchesTable.filteredData.unshift(array)
                                 this.matchesTable.data.push({
                                     match: match[0],
@@ -213,6 +241,7 @@ export default {
                                     all_joined: matchRef.all_joined,
                                     creationDate: matchRef.creation_date
                                 })
+
                             })
 
                         }) 
@@ -237,6 +266,26 @@ export default {
 
     methods:{
 
+        async reportError(match) {
+            try{
+                const playersRef = this.$fireDb.ref(`players/${match}`)
+                let playersName = await playersRef.once('value',(snapshot) => {
+                    snapshot
+                })
+                playersName = Object.entries(playersName.val())
+                let player = playersName.find( c => c[1].player_uid === this.authUser.uid)
+                const playerRef = this.$fireDb.ref(`players/${match}/${player[0]}`)
+                await playerRef.update({
+                    report_error: true
+                })
+                // this.errorReported = true
+            }
+            catch (e) {
+                    console.log(e)
+                    return
+            }
+        },
+
         async joinMatch(match) {
             try {
                 const playersRef = this.$fireDb.ref(`players/${match}`)
@@ -257,16 +306,6 @@ export default {
                 matchJoined = matchJoined.val()
                 if (!playerExists && !matchJoined.all_joined){
                     let newPlayerID = matchJoined.joined_players
-                    await matchRef.update({
-                        'joined_players': matchJoined.joined_players + 1
-                    })
-
-                    if (matchJoined.joined_players === matchJoined.n_players - 1){
-                        await matchRef.update({
-                            'all_joined': true
-                        })
-                    }
-
                     const playersRef = this.$fireDb.ref(`players/${match}`)
                     let playerObj = {}
                     let admittedCallsObj= {}
@@ -277,7 +316,7 @@ export default {
                     for (let i = 0; i <= nCards.val(); i++){
                         admittedCallsObj[parseInt(i)] = false
                     }
-
+                    newPlayerID += 1
                     playerObj["player_" + newPlayerID] = {
                         is_ready: false,
                         player_uid: this.authUser.uid,
