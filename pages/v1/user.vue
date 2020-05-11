@@ -23,7 +23,7 @@
         <div class= "row mt-2 mb-4">
             <div class = "col-2 "></div>
             <div class = "col-4 text-left">
-                <h4>W{{user.record.w}}-T{{user.record.t}}</h4>
+                <h4>Record: {{user.record.w}}/{{user.record.t}}</h4>
             </div>
             <div class = "col-4 text-left">
             </div>
@@ -192,6 +192,13 @@ export default {
             if(this.authUser){
                 let ref = this.$fireDb.ref(`users/${this.authUser.uid}`)
                 await ref.update({user_name : this.inputName})
+                let rooms =await ref.child('rooms').once('value',(snapshot) => {
+                    snapshot
+                })
+                for(let room in rooms.val()){
+                   let roomRef = this.$fireDb.ref(`rooms/${room}/users/${this.authUser.uid}`)
+                   await roomRef.update({user_name : this.inputName})
+                }
                 this.inputName = null
                 this.visibleModal = false
             }
