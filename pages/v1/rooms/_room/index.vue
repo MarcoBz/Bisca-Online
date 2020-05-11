@@ -210,6 +210,7 @@ export default {
                                         }
                                         this.tempFilteredData[match[0]] = array
                                         this.tempData.push({
+                                            match: match[0],
                                             is_started: matchRef.is_started,
                                             is_ended: matchRef.is_ended,
                                             n_players: matchRef.n_players,
