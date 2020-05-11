@@ -181,23 +181,6 @@ export default {
 
                     this.chart.filteredData = []
                     this.chart.record = []
-                    if (this.room.users){
-                        let users = Object.entries(this.room.users).forEach((user) => {
-                            let obj = {
-                                email: user[1].email,
-                                user_name: user[1].user_name,
-                                w: this.room.users[user[0]].w,
-                                t: this.room.users[user[0]].t,
-                                rank: null
-                            }
-                            this.chart.record.push(obj)
-                        })
-                    }
-
-
-
-                    this.matchesTable.filteredData = []
-                    this.matchesTable.data = []
                     if(this.room){
                         if (this.room.users){
                             let users = Object.entries(this.room.users).forEach((user) => {
@@ -208,18 +191,36 @@ export default {
                                     t: this.room.users[user[0]].t,
                                     rank: null
                                 }
-
-                            this.chart.record.push(obj)
-
+                                this.chart.record.push(obj)
                             })
-
                         }
+
+
                         // this.matchesTable.filteredData = []
                         this.tempData = []
+                        this.error_reported = {}
                         if(this.room.matches) {
                             let matches = Object.entries(this.room.matches).map((match) => {
                                 return new Promise((resolve) => {
                                     this.$fireDb.ref(`matches/${match[0]}`).on('value', (snapshot) => {
+                        
+                                        let error_reported = false
+                                        this.$fireDb.ref(`players/${match[0]}/`).on('value', (snapshot) => {
+                                            let players = snapshot.val()
+                                            if (players){
+                                                players = Object.entries(players)
+                                                let player = players.find( c => c[1].player_uid === this.authUser.uid)
+                                                if(player){
+                                                    const playerRef = this.$fireDb.ref(`players/${match[0]}/${player[0]}/report_error`).on('value', (snapshot) => {
+                                                        if (snapshot.val()) error_reported = true 
+                                                        this.error_reported[match[0]] = error_reported
+                                                    })
+                                                } 
+                                            }                     
+                                        })
+
+                                        this.error_reported[match[0]] = error_reported
+
                                         let matchRef = snapshot.val()
                                         let array = ['', match[0], null, matchRef.n_lives, `${matchRef.joined_players}/${matchRef.n_players}`, matchRef.ready_players, null]
                                         if (matchRef.is_noWinner)  array[6] = "No Winner"
@@ -244,7 +245,7 @@ export default {
                                         resolve()
                                     })
                                 });
-                            })
+                            }) 
                             Promise.all(matches).then(() => {
                                 this.matchesTable.filteredData = this.tempFilteredData
                                 this.matchesTable.data = this.tempData

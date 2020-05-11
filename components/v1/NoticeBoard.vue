@@ -226,7 +226,9 @@ export default {
     return {
         count: null,
         interval: 1000,
-        startGameShow: true
+        startGameShow: true,
+        alarm: false,
+        alarmObject: null
     }
   },
 
@@ -251,10 +253,22 @@ export default {
 
     'player': function(newData, oldData){
         if (newData[1].his_turn && !oldData[1].his_turn){
-            let audioObj = new Audio('http://soundbible.com/mp3/Elevator Ding-SoundBible.com-685385892.mp3')
-            audioObj.play()
+            this.alarmObject = setTimeout(() => {
+                this.alarm = true
+                let audioObj = new Audio('http://soundbible.com/mp3/Elevator Ding-SoundBible.com-685385892.mp3')
+                audioObj.play()
+            }, 30000);
         }
     },
+
+    'player': function(newData, oldData){
+        if (!newData[1].his_turn && oldData[1].his_turn){
+            if(this.alarm) {
+                this.alarm = false
+                clearTimeout(this.alarmObject)
+            }
+         }
+     }
 
     'match.current_game': function(newGame){
 
