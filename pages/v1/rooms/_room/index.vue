@@ -195,15 +195,15 @@ export default {
                             })
                         }
 
-
-                        // this.matchesTable.filteredData = []
+                        this.matchesTable.data = []
+                        this.matchesTable.filteredData = {}
+                        this.tempFilteredData = {}
                         this.tempData = []
                         this.error_reported = {}
                         if(this.room.matches) {
                             let matches = Object.entries(this.room.matches).map((match) => {
                                 return new Promise((resolve) => {
                                     this.$fireDb.ref(`matches/${match[0]}`).on('value', (snapshot) => {
-                        
                                         let error_reported = false
                                         this.$fireDb.ref(`players/${match[0]}/`).on('value', (snapshot) => {
                                             let players = snapshot.val()
@@ -220,28 +220,30 @@ export default {
                                         })
 
                                         this.error_reported[match[0]] = error_reported
-
                                         let matchRef = snapshot.val()
-                                        let array = ['', match[0], null, matchRef.n_lives, `${matchRef.joined_players}/${matchRef.n_players}`, matchRef.ready_players, null]
-                                        if (matchRef.is_noWinner)  array[6] = "No Winner"
-                                        else {
-                                            if (matchRef.winner_player_index || matchRef.winner_player_index === 0){
-                                                this.$fireDb.ref(`players/${match[0]}/player_${matchRef.winner_player_index}`).on('value', (snapshot) => {
-                                                    let player = snapshot.val()
-                                                    array[6] = player.player_name
-                                                })
+                                        if (matchRef){
+                                            let array = ['', match[0], null, matchRef.n_lives, `${matchRef.joined_players}/${matchRef.n_players}`, matchRef.ready_players, null]
+                                            if (matchRef.is_noWinner)  array[6] = "No Winner"
+                                            else {
+                                                if (matchRef.winner_player_index || matchRef.winner_player_index === 0){
+                                                    this.$fireDb.ref(`players/${match[0]}/player_${matchRef.winner_player_index}`).on('value', (snapshot) => {
+                                                        let player = snapshot.val()
+                                                        array[6] = player.player_name
+                                                    })
+                                                }
                                             }
+                                            this.tempFilteredData[match[0]] = array
+                                            this.tempData.push({
+                                                match: match[0],
+                                                is_started: matchRef.is_started,
+                                                is_ended: matchRef.is_ended,
+                                                n_players: matchRef.n_players,
+                                                joined_players: matchRef.joined_players,
+                                                all_joined: matchRef.all_joined,
+                                                creationDate: matchRef.creation_date
+                                            })
+
                                         }
-                                        this.tempFilteredData[match[0]] = array
-                                        this.tempData.push({
-                                            match: match[0],
-                                            is_started: matchRef.is_started,
-                                            is_ended: matchRef.is_ended,
-                                            n_players: matchRef.n_players,
-                                            joined_players: matchRef.joined_players,
-                                            all_joined: matchRef.all_joined,
-                                            creationDate: matchRef.creation_date
-                                        })
                                         resolve()
                                     })
                                 });

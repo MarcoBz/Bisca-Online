@@ -48,9 +48,6 @@ exports.updateReportError = functions.database.ref('/players/{match}/{player}/re
         const gameMatchRef = admin.database().ref(`games/${match}`)  
         const turnMatchRef = admin.database().ref(`turns/${match}`) 
         const playerMatchRef = admin.database().ref(`players/${match}`)   
-        gameMatchRef.remove() 
-        turnMatchRef.remove() 
-        playerMatchRef.remove()
         let room = await matchRef.child('room').once('value',(snapshot) => {
             snapshot
         })   
@@ -89,6 +86,9 @@ exports.updateReportError = functions.database.ref('/players/{match}/{player}/re
                 t: tRoom-1
             })                 
         }
+        gameMatchRef.remove() 
+        turnMatchRef.remove() 
+        playerMatchRef.remove()
     }
  
 

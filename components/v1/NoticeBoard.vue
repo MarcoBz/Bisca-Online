@@ -267,8 +267,8 @@ export default {
                 this.alarm = false
                 clearTimeout(this.alarmObject)
             }
-         }
-     }
+        }
+    },
 
     'match.current_game': function(newGame){
 
