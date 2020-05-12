@@ -4,31 +4,143 @@ const utils = require("./utils.js")
 admin.initializeApp();
 
 exports.createUser = functions.auth.user().onCreate(async (user) => {
-
-        const ref = admin.database().ref()
-        let totalUsers = await ref.child('total_users').once('value',(snapshot) => {
-            snapshot
-        })
-        totalUsers = totalUsers.val()
-        let newUserID = totalUsers + 1
-        await admin.database().ref().update({
-          total_users: newUserID
-        })
-        const usersRef = admin.database().ref('users')
-        let obj = {}
-        obj[user.uid] = {
-            email: user.email,
-            user_name: null,
-            registration_date : (new Date()).toISOString(),
-            rooms: null,
-            record: {
-                w: 0,
-                t: 0
-          }
+    const ref = admin.database().ref()
+    let totalUsers = await ref.child('total_users').once('value',(snapshot) => {
+        snapshot
+    })
+    totalUsers = totalUsers.val()
+    let newUserID = totalUsers + 1
+    await admin.database().ref().update({
+        total_users: newUserID
+    })
+    const usersRef = admin.database().ref('users')
+    let obj = {}
+    obj[user.uid] = {
+        email: user.email,
+        user_name: null,
+        registration_date : (new Date()).toISOString(),
+        rooms: null,
+        record: {
+            w: 0,
+            t: 0
         }
-        await usersRef.update(obj)
+    }
+    await usersRef.update(obj)
 });
 
+exports.updateReportError = functions.database.ref('/players/{match}/{player}/report_error')
+.onCreate(async (snap, context) => { 
+    let match = context.params.match
+    const matchRef = admin.database().ref(`matches/${match}`)    
+    let nPlayers = await matchRef.child('n_players').once('value',(snapshot) => {
+        snapshot
+    })   
+    nPlayers = nPlayers.val()
+    let count = 0
+    let playersRef = admin.database().ref(`players/${match}`)
+    let players = await playersRef.once('value',(snapshot) => {
+        snapshot
+    })
+    players = Object.entries(players.val()).map( (player) => {
+        if (player[1].report_error) count += 1
+    })
+    if (count === nPlayers){
+        const gameMatchRef = admin.database().ref(`games/${match}`)  
+        const turnMatchRef = admin.database().ref(`turns/${match}`) 
+        const playerMatchRef = admin.database().ref(`players/${match}`)   
+        let room = await matchRef.child('room').once('value',(snapshot) => {
+            snapshot
+        })   
+        room = room.val()
+        const roomMatchRef = admin.database().ref(`rooms/${room}/matches/${match}`)  
+        let users = await roomMatchRef.child('users').once('value',(snapshot) => {
+            snapshot
+        })
+        users = users.val()
+        roomMatchRef.remove()
+        matchRef.remove()
+        const roomUsersRef = admin.database().ref(`rooms/${room}/users`) 
+        for (let i in users){
+            let t = await roomUsersRef.child(`${i}/t`).once('value',(snapshot) => {
+                snapshot
+            })
+            t = t.val()
+            await roomUsersRef.child(`${i}`).update({
+                t: t-1
+            })  
+
+            const usersRef = admin.database().ref(`users`) 
+            let tTotal = await usersRef.child(`${i}/record/t`).once('value',(snapshot) => {
+                snapshot
+            })
+            tTotal = tTotal.val()
+            await usersRef.child(`${i}/record`).update({
+                t: tTotal-1
+            }) 
+
+            let tRoom = await usersRef.child(`${i}/rooms/${room}/t`).once('value',(snapshot) => {
+                snapshot
+            })
+            tRoom = tRoom.val()
+            await usersRef.child(`${i}/rooms/${room}`).update({
+                t: tRoom-1
+            })                 
+        }
+        gameMatchRef.remove() 
+        turnMatchRef.remove() 
+        playerMatchRef.remove()
+    }
+ 
+
+});
+
+exports.updateReadyPlayers = functions.database.ref('/players/{match}/{player}/is_ready')
+.onUpdate(async (change, context) => { 
+    let match = context.params.match
+    if ( change.before.val() === false && change.after.val() === true){
+        const matchRef = admin.database().ref(`matches/${match}`)    
+        let nPlayers = await matchRef.child('n_players').once('value',(snapshot) => {
+            snapshot
+        })   
+        nPlayers = nPlayers.val()
+        let count = 0
+        let playersRef = admin.database().ref(`players/${match}`)
+        let players = await playersRef.once('value',(snapshot) => {
+            snapshot
+        })
+        players = Object.entries(players.val()).map( (player) => {
+            if (player[1].is_ready) count += 1
+        })
+        let all_ready = false
+        if (count === nPlayers) all_ready = true
+        await matchRef.update({
+            ready_players : count,
+            all_ready: all_ready
+        })  
+
+    }
+});
+
+exports.updateJoinedPlayers = functions.database.ref('/players/{match}/{player}')
+.onCreate(async (snap, context) => { 
+    let match = context.params.match
+    const matchRef = admin.database().ref(`matches/${match}`)    
+    let nPlayers = await matchRef.child('n_players').once('value',(snapshot) => {
+        snapshot
+    })   
+    nPlayers = nPlayers.val()
+    let playersRef = admin.database().ref(`players/${match}`)
+    let players = await playersRef.once('value',(snapshot) => {
+        snapshot
+    })
+    let count = Object.entries(players.val()).length
+    let all_joined = false
+    if (count === nPlayers) all_joined = true
+    await matchRef.update({
+        joined_players : count,
+        all_joined: all_joined
+    })  
+});
 
 exports.updateLives = functions.database.ref('/games/{match}/{game}/is_ended')
 .onUpdate(async (change, context) => { 
@@ -382,6 +494,9 @@ exports.defineTurnWinner = functions.database.ref('/turns/{match}/{game}/{turn}/
 
     }
 })
+
+
+
 
 exports.shuffleDealer = functions.database.ref('/matches/{match}/all_ready')
 .onUpdate(async (change, context) => {

@@ -143,20 +143,6 @@ export default {
         }  
     },
 
-    async playerIsReady(){
-        try {
-          const playerRef = this.$fireDb.ref(`players/${this.matchName}/${this.player[0]}`)
-          await playerRef.update({
-            'is_ready': true
-          })
-          this.$emit('ready')
-
-        } catch (e) {
-          console.log(e)
-          return
-        }  
-    }
-
   },
 
 }
