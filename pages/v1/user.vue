@@ -194,14 +194,13 @@ export default {
                 await ref.update({user_name : this.inputName})
                 let rooms =await ref.child('rooms').once('value',(snapshot) => {
                     snapshot
-                }) 
+                })
                 for(let room in rooms.val()){
-                    let roomRef = this.$fireDb.ref(`rooms/${room}/users/${this.authUser.uid}`)
-                    await roomRef.update({user_name : this.inputName})
+                   let roomRef = this.$fireDb.ref(`rooms/${room}/users/${this.authUser.uid}`)
+                   await roomRef.update({user_name : this.inputName})
                 }
                 this.inputName = null
                 this.visibleModal = false
-
             }
         },
 
