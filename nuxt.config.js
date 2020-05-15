@@ -1,6 +1,21 @@
 
 import axios from 'axios'
+import dotenv from "dotenv";
+dotenv.config();
+
 export default {
+
+  env: {
+    API_KEY : process.env.API_KEY,
+    AUTH_DOMAIN : process.env.AUTH_DOMAIN,
+    DATABASE_URL : process.env.DATABASE_URL,
+    PROJECT_ID :  process.env.PROJECT_ID,
+    STORAGE_BUCKET : process.env.STORAGE_BUCKET,
+    MESSAGING_SENDER_ID : process.env.MESSAGING_SENDER_ID,
+    APP_ID : process.env.APP_ID,
+    MEASURAMENT_ID : process.env.MEASURAMENT_ID,
+  },
+
   mode: 'spa',
   /*
   ** Headers of the page
@@ -73,15 +88,15 @@ export default {
     [
       '@nuxtjs/firebase',
       {
-        config: {
-          apiKey: 'AIzaSyBvY08wKUp9DMQJ4y9s_tpioux-1gDMivE',
-          authDomain: '<authDomain>',
-          databaseURL: 'https://bisca-online.firebaseio.com/',
-          projectId: 'bisca-online',
-          storageBucket: '<storageBucket>',
-          messagingSenderId: '<messagingSenderId>',
-          appId: '1:627553851962:web:63dffbd4ed826e11333303',
-          measurementId: '<measurementId>'
+        config : {
+          apiKey: process.env.API_KEY,
+          authDomain: process.env.AUTH_DOMAIN,
+          databaseURL: process.env.DATABASE_URL,
+          projectId: process.env.PROJECT_ID,
+          storageBucket: process.env.STORAGE_BUCKET,
+          messagingSenderId: process.env.MESSAGING_SENDER_ID,
+          appId: process.env.APP_ID,
+          measurementId: process.env.MEASURAMENT_ID
         },
         services: {
           realtimeDb: true,
